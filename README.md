@@ -49,7 +49,6 @@ Instead of waiting days for a lawyer to manually review repetitive boilerplate t
 
 ## 🤖 What Makes RedLiner an "Agentic AI" System?
 
-If you are explaining RedLiner to an instructor, colleague, or hiring manager, here is how to explain what makes it **genuinely Agentic**, rather than a standard script or LLM wrapper:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
