@@ -1,0 +1,18 @@
+{
+  "name": "redliner-email-worker",
+  "version": "1.0.0",
+  "description": "Cloudflare Email Routing Worker for RedLiner automated contract ingestion and outbound negotiation dispatch",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260702.1",
+    "typescript": "^5.9.3",
+    "wrangler": "^3.114.17"
+  },
+  "dependencies": {
+    "postal-mime": "^4.1.4"
+  }
+}

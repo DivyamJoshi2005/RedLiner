@@ -1,0 +1,9 @@
+name = "redliner-email-worker"
+main = "src/index.ts"
+compatibility_date = "2024-05-12"
+
+[vars]
+REDLINER_WEBHOOK_URL = "http://localhost:8000/api/webhook/email"
+EMAIL_SENDER_NAME = "RedLiner Enterprise Procurement"
+DEFAULT_FROM_EMAIL = "negotiations@redliner.ai"
+ENVIRONMENT = "production"

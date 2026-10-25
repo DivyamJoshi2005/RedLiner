@@ -1,0 +1,988 @@
+[
+  {
+    "vendor_id": "VND-001",
+    "company_name": "ApexCloud Enterprise Ltd",
+    "domain": "apexcloud.io",
+    "country": "United States",
+    "registration_number": "DE-7849201",
+    "domain_age_years": 7.4,
+    "credit_score": 88,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "GDPR",
+      "HIPAA"
+    ],
+    "annual_revenue_usd_m": 142.5,
+    "employee_count": 640,
+    "notes": "Stable enterprise cloud software provider with strong balance sheet."
+  },
+  {
+    "vendor_id": "VND-002",
+    "company_name": "Datadog Inc",
+    "domain": "datadoghq.com",
+    "country": "United States",
+    "registration_number": "DE-4820194",
+    "domain_age_years": 14.2,
+    "credit_score": 95,
+    "financial_rating": "AAA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "FedRAMP Moderate",
+      "GDPR",
+      "HIPAA"
+    ],
+    "annual_revenue_usd_m": 2130.0,
+    "employee_count": 5200,
+    "notes": "Publicly traded observability vendor. Low counterparty default risk."
+  },
+  {
+    "vendor_id": "VND-003",
+    "company_name": "Snowflake Inc",
+    "domain": "snowflake.com",
+    "country": "United States",
+    "registration_number": "DE-5192841",
+    "domain_age_years": 12.8,
+    "credit_score": 94,
+    "financial_rating": "AAA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "FedRAMP High",
+      "HIPAA",
+      "PCI-DSS"
+    ],
+    "annual_revenue_usd_m": 2800.0,
+    "employee_count": 7000,
+    "notes": "Tier-1 enterprise data cloud platform."
+  },
+  {
+    "vendor_id": "VND-004",
+    "company_name": "Cloudflare Inc",
+    "domain": "cloudflare.com",
+    "country": "United States",
+    "registration_number": "DE-4710294",
+    "domain_age_years": 15.1,
+    "credit_score": 93,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "PCI-DSS",
+      "GDPR",
+      "FedRAMP"
+    ],
+    "annual_revenue_usd_m": 1300.0,
+    "employee_count": 3500,
+    "notes": "Edge compute and internet security infrastructure."
+  },
+  {
+    "vendor_id": "VND-005",
+    "company_name": "Twilio Inc",
+    "domain": "twilio.com",
+    "country": "United States",
+    "registration_number": "DE-4501928",
+    "domain_age_years": 16.0,
+    "credit_score": 89,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "GDPR",
+      "HIPAA"
+    ],
+    "annual_revenue_usd_m": 4100.0,
+    "employee_count": 5800,
+    "notes": "Global communications platform as a service."
+  },
+  {
+    "vendor_id": "VND-006",
+    "company_name": "Workday Inc",
+    "domain": "workday.com",
+    "country": "United States",
+    "registration_number": "DE-3982014",
+    "domain_age_years": 19.3,
+    "credit_score": 96,
+    "financial_rating": "AAA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "ISO 27018",
+      "FedRAMP",
+      "GDPR"
+    ],
+    "annual_revenue_usd_m": 7200.0,
+    "employee_count": 18800,
+    "notes": "Enterprise HR and financial management software."
+  },
+  {
+    "vendor_id": "VND-007",
+    "company_name": "CrowdStrike Holdings",
+    "domain": "crowdstrike.com",
+    "country": "United States",
+    "registration_number": "DE-5019283",
+    "domain_age_years": 13.5,
+    "credit_score": 91,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "FedRAMP High",
+      "GDPR"
+    ],
+    "annual_revenue_usd_m": 3050.0,
+    "employee_count": 7900,
+    "notes": "Endpoint cybersecurity provider."
+  },
+  {
+    "vendor_id": "VND-008",
+    "company_name": "ServiceNow Inc",
+    "domain": "servicenow.com",
+    "country": "United States",
+    "registration_number": "DE-3810294",
+    "domain_age_years": 20.1,
+    "credit_score": 97,
+    "financial_rating": "AAA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "FedRAMP High",
+      "GDPR",
+      "HIPAA"
+    ],
+    "annual_revenue_usd_m": 8900.0,
+    "employee_count": 22000,
+    "notes": "IT service management and enterprise workflow automation."
+  },
+  {
+    "vendor_id": "VND-009",
+    "company_name": "HubSpot Inc",
+    "domain": "hubspot.com",
+    "country": "United States",
+    "registration_number": "DE-4182903",
+    "domain_age_years": 18.0,
+    "credit_score": 92,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001",
+      "GDPR",
+      "HIPAA"
+    ],
+    "annual_revenue_usd_m": 2170.0,
+    "employee_count": 7600,
+    "notes": "Inbound marketing and CRM platform."
+  },
+  {
+    "vendor_id": "VND-010",
+    "company_name": "Stripe Payments LLC",
+    "domain": "stripe.com",
+    "country": "United States",
+    "registration_number": "DE-4691024",
+    "domain_age_years": 14.8,
+    "credit_score": 98,
+    "financial_rating": "AAA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "PCI-DSS Level 1",
+      "ISO 27001",
+      "GDPR"
+    ],
+    "annual_revenue_usd_m": 14000.0,
+    "employee_count": 8000,
+    "notes": "Leading global financial infrastructure platform."
+  },
+  {
+    "vendor_id": "VND-011",
+    "company_name": "Synapse AI Labs",
+    "domain": "synapse-ai.tech",
+    "country": "United Kingdom",
+    "registration_number": "UK-12948012",
+    "domain_age_years": 3.2,
+    "credit_score": 68,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type I",
+      "GDPR"
+    ],
+    "annual_revenue_usd_m": 14.2,
+    "employee_count": 85,
+    "notes": "Fast-growing AI startup. SOC 2 Type II still pending audit completion."
+  },
+  {
+    "vendor_id": "VND-012",
+    "company_name": "Nexus Cyber Systems",
+    "domain": "nexuscyber.co",
+    "country": "Israel",
+    "registration_number": "IL-51492019",
+    "domain_age_years": 4.1,
+    "credit_score": 74,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "ISO 27001",
+      "SOC 2 Type II"
+    ],
+    "annual_revenue_usd_m": 32.0,
+    "employee_count": 160,
+    "notes": "Security telemetry analytics. Past patent dispute settled in 2024."
+  },
+  {
+    "vendor_id": "VND-013",
+    "company_name": "Kallisto Analytics Corp",
+    "domain": "kallisto-data.com",
+    "country": "Canada",
+    "registration_number": "CA-8920149",
+    "domain_age_years": 5.8,
+    "credit_score": 71,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "PIPEDA"
+    ],
+    "annual_revenue_usd_m": 18.5,
+    "employee_count": 95,
+    "notes": "Canadian enterprise BI analytics provider. Moderate cash runway."
+  },
+  {
+    "vendor_id": "VND-014",
+    "company_name": "Vanguard Supply Chain",
+    "domain": "vanguard-logistics.net",
+    "country": "Germany",
+    "registration_number": "DE-HRB-78291",
+    "domain_age_years": 8.9,
+    "credit_score": 76,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "ISO 9001",
+      "ISO 27001",
+      "GDPR"
+    ],
+    "annual_revenue_usd_m": 64.0,
+    "employee_count": 420,
+    "notes": "European logistics provider with solid track record."
+  },
+  {
+    "vendor_id": "VND-015",
+    "company_name": "Zenith Staffing Global",
+    "domain": "zenith-staffing.com",
+    "country": "United States",
+    "registration_number": "IL-7819204",
+    "domain_age_years": 6.5,
+    "credit_score": 65,
+    "financial_rating": "BB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 28.0,
+    "employee_count": 210,
+    "notes": "IT contractor staffing. Past wage dispute arbitration resolved in 2025."
+  },
+  {
+    "vendor_id": "VND-016",
+    "company_name": "OmniFlow Solutions",
+    "domain": "omniflow.io",
+    "country": "Netherlands",
+    "registration_number": "NL-8492019",
+    "domain_age_years": 4.0,
+    "credit_score": 70,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "GDPR"
+    ],
+    "annual_revenue_usd_m": 19.8,
+    "employee_count": 110,
+    "notes": "ERP workflow orchestration SaaS. Consistent subscription revenue."
+  },
+  {
+    "vendor_id": "VND-017",
+    "company_name": "CognitiveScale B2B",
+    "domain": "cognitivescale-b2b.com",
+    "country": "United States",
+    "registration_number": "TX-6910294",
+    "domain_age_years": 5.1,
+    "credit_score": 67,
+    "financial_rating": "BB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II"
+    ],
+    "annual_revenue_usd_m": 15.0,
+    "employee_count": 78,
+    "notes": "Enterprise AI agent builder. Recently underwent series B restructuring."
+  },
+  {
+    "vendor_id": "VND-018",
+    "company_name": "PulseSec Monitoring Ltd",
+    "domain": "pulsesec.io",
+    "country": "Singapore",
+    "registration_number": "SG-201938102K",
+    "domain_age_years": 4.8,
+    "credit_score": 73,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "ISO 27001",
+      "SOC 2 Type II"
+    ],
+    "annual_revenue_usd_m": 22.4,
+    "employee_count": 130,
+    "notes": "Cloud SIEM and SOC provider for APAC and North America."
+  },
+  {
+    "vendor_id": "VND-019",
+    "company_name": "VectorDB Core Technologies",
+    "domain": "vectordb-core.org",
+    "country": "United States",
+    "registration_number": "DE-8910245",
+    "domain_age_years": 3.5,
+    "credit_score": 69,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II"
+    ],
+    "annual_revenue_usd_m": 17.5,
+    "employee_count": 92,
+    "notes": "Vector database infra provider with high growth rate."
+  },
+  {
+    "vendor_id": "VND-020",
+    "company_name": "Hyperion Cloud Storage",
+    "domain": "hyperion-storage.cloud",
+    "country": "Ireland",
+    "registration_number": "IE-689102",
+    "domain_age_years": 5.2,
+    "credit_score": 72,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "ISO 27001",
+      "GDPR",
+      "SOC 2 Type II"
+    ],
+    "annual_revenue_usd_m": 31.0,
+    "employee_count": 145,
+    "notes": "S3-compatible object storage provider."
+  },
+  {
+    "vendor_id": "VND-021",
+    "company_name": "QuantumCore Offshore Ltd",
+    "domain": "quantumcore-tech.su",
+    "country": "Cyprus",
+    "registration_number": "CY-HE-49102",
+    "domain_age_years": 1.1,
+    "credit_score": 42,
+    "financial_rating": "CCC",
+    "sanction_pep_status": "FLAGGED",
+    "past_litigation_count": 3,
+    "compliance_certifications": [],
+    "annual_revenue_usd_m": 3.1,
+    "employee_count": 18,
+    "notes": "Beneficial ownership tracing links to PEP entities under inquiry. Domain registered via TLD (.su)."
+  },
+  {
+    "vendor_id": "VND-022",
+    "company_name": "ShadowSoft Cayman Corp",
+    "domain": "shadowsoft.ky",
+    "country": "Cayman Islands",
+    "registration_number": "KY-891024",
+    "domain_age_years": 0.8,
+    "credit_score": 35,
+    "financial_rating": "D",
+    "sanction_pep_status": "FLAGGED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [],
+    "annual_revenue_usd_m": 1.2,
+    "employee_count": 8,
+    "notes": "Recently formed offshore shell. Incomplete beneficial ownership disclosure."
+  },
+  {
+    "vendor_id": "VND-023",
+    "company_name": "Redline Capital Tech LLC",
+    "domain": "redline-capital-tech.biz",
+    "country": "United States",
+    "registration_number": "NV-202319482",
+    "domain_age_years": 1.4,
+    "credit_score": 48,
+    "financial_rating": "B",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 4,
+    "compliance_certifications": [],
+    "annual_revenue_usd_m": 2.8,
+    "employee_count": 12,
+    "notes": "Multiple vendor non-payment lawsuits filed in Nevada district court."
+  },
+  {
+    "vendor_id": "VND-024",
+    "company_name": "SeveroExport Logistics",
+    "domain": "severo-export.ru",
+    "country": "Russia",
+    "registration_number": "RU-OGRN-1027739",
+    "domain_age_years": 11.2,
+    "credit_score": 20,
+    "financial_rating": "D",
+    "sanction_pep_status": "BLOCKED",
+    "past_litigation_count": 6,
+    "compliance_certifications": [],
+    "annual_revenue_usd_m": 45.0,
+    "employee_count": 300,
+    "notes": "OFAC SDN and EU sanctions match. Direct procurement prohibited by law."
+  },
+  {
+    "vendor_id": "VND-025",
+    "company_name": "Titanium Global Commodities",
+    "domain": "titanium-global.ae",
+    "country": "United Arab Emirates",
+    "registration_number": "AE-DMCC-89102",
+    "domain_age_years": 2.3,
+    "credit_score": 51,
+    "financial_rating": "B",
+    "sanction_pep_status": "FLAGGED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "ISO 9001"
+    ],
+    "annual_revenue_usd_m": 88.0,
+    "employee_count": 65,
+    "notes": "Subject to secondary sanctions review regarding dual-use technology supply chain."
+  },
+  {
+    "vendor_id": "VND-026",
+    "company_name": "FastTrack DevShop Inc",
+    "domain": "fasttrack-devshop.io",
+    "country": "India",
+    "registration_number": "IN-U72200KA2022",
+    "domain_age_years": 2.5,
+    "credit_score": 58,
+    "financial_rating": "BB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 4.5,
+    "employee_count": 140,
+    "notes": "IT consulting boutique. Low cash buffer; requests 50% upfront payment."
+  },
+  {
+    "vendor_id": "VND-027",
+    "company_name": "AeroByte Infrastructure Ltd",
+    "domain": "aerobyte-cloud.cc",
+    "country": "Seychelles",
+    "registration_number": "SC-281920",
+    "domain_age_years": 0.5,
+    "credit_score": 30,
+    "financial_rating": "D",
+    "sanction_pep_status": "FLAGGED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [],
+    "annual_revenue_usd_m": 0.8,
+    "employee_count": 5,
+    "notes": "Domain registered 6 months ago. Anonymous registrar, offshore jurisdiction."
+  },
+  {
+    "vendor_id": "VND-028",
+    "company_name": "IronClad Storage Systems",
+    "domain": "ironclad-systems.com",
+    "country": "United States",
+    "registration_number": "DE-4928103",
+    "domain_age_years": 9.2,
+    "credit_score": 79,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 54.0,
+    "employee_count": 230,
+    "notes": "Solid hardware and cold storage partner."
+  },
+  {
+    "vendor_id": "VND-029",
+    "company_name": "BlueWhale Data Services",
+    "domain": "bluewhale-data.org",
+    "country": "South Korea",
+    "registration_number": "KR-102-81-92014",
+    "domain_age_years": 6.8,
+    "credit_score": 82,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "ISO 27001",
+      "ISMS-P",
+      "SOC 2 Type II"
+    ],
+    "annual_revenue_usd_m": 38.0,
+    "employee_count": 180,
+    "notes": "Reputable APAC data aggregation partner."
+  },
+  {
+    "vendor_id": "VND-030",
+    "company_name": "Voltaic Energy Management",
+    "domain": "voltaic-energy.com",
+    "country": "France",
+    "registration_number": "FR-RCS-492019482",
+    "domain_age_years": 11.0,
+    "credit_score": 85,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "ISO 14001",
+      "ISO 50001",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 110.0,
+    "employee_count": 550,
+    "notes": "Green energy datacenter cooling provider."
+  },
+  {
+    "vendor_id": "VND-031",
+    "company_name": "Enterprise Partner 31 Solutions",
+    "domain": "partner31-solutions.com",
+    "country": "United Kingdom",
+    "registration_number": "REG-31751",
+    "domain_age_years": 14.9,
+    "credit_score": 61,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 81.3,
+    "employee_count": 422,
+    "notes": "Standard B2B procurement tier vendor (Staffing)."
+  },
+  {
+    "vendor_id": "VND-032",
+    "company_name": "Enterprise Partner 32 Solutions",
+    "domain": "partner32-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-32775",
+    "domain_age_years": 15.3,
+    "credit_score": 68,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 83.6,
+    "employee_count": 434,
+    "notes": "Standard B2B procurement tier vendor (Hardware)."
+  },
+  {
+    "vendor_id": "VND-033",
+    "company_name": "Enterprise Partner 33 Solutions",
+    "domain": "partner33-solutions.com",
+    "country": "Germany",
+    "registration_number": "REG-33799",
+    "domain_age_years": 15.7,
+    "credit_score": 75,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 85.9,
+    "employee_count": 446,
+    "notes": "Standard B2B procurement tier vendor (Data)."
+  },
+  {
+    "vendor_id": "VND-034",
+    "company_name": "Enterprise Partner 34 Solutions",
+    "domain": "partner34-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-34823",
+    "domain_age_years": 16.1,
+    "credit_score": 82,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 88.2,
+    "employee_count": 458,
+    "notes": "Standard B2B procurement tier vendor (Logistics)."
+  },
+  {
+    "vendor_id": "VND-035",
+    "company_name": "Enterprise Partner 35 Solutions",
+    "domain": "partner35-solutions.com",
+    "country": "United Kingdom",
+    "registration_number": "REG-35847",
+    "domain_age_years": 16.5,
+    "credit_score": 89,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 90.5,
+    "employee_count": 470,
+    "notes": "Standard B2B procurement tier vendor (SaaS)."
+  },
+  {
+    "vendor_id": "VND-036",
+    "company_name": "Enterprise Partner 36 Solutions",
+    "domain": "partner36-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-36871",
+    "domain_age_years": 16.9,
+    "credit_score": 60,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 92.8,
+    "employee_count": 482,
+    "notes": "Standard B2B procurement tier vendor (Cloud)."
+  },
+  {
+    "vendor_id": "VND-037",
+    "company_name": "Enterprise Partner 37 Solutions",
+    "domain": "partner37-solutions.com",
+    "country": "United Kingdom",
+    "registration_number": "REG-37895",
+    "domain_age_years": 17.3,
+    "credit_score": 67,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 95.1,
+    "employee_count": 494,
+    "notes": "Standard B2B procurement tier vendor (Cybersecurity)."
+  },
+  {
+    "vendor_id": "VND-038",
+    "company_name": "Enterprise Partner 38 Solutions",
+    "domain": "partner38-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-38919",
+    "domain_age_years": 17.7,
+    "credit_score": 74,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 97.4,
+    "employee_count": 506,
+    "notes": "Standard B2B procurement tier vendor (Staffing)."
+  },
+  {
+    "vendor_id": "VND-039",
+    "company_name": "Enterprise Partner 39 Solutions",
+    "domain": "partner39-solutions.com",
+    "country": "Germany",
+    "registration_number": "REG-39943",
+    "domain_age_years": 18.1,
+    "credit_score": 81,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 99.7,
+    "employee_count": 518,
+    "notes": "Standard B2B procurement tier vendor (Hardware)."
+  },
+  {
+    "vendor_id": "VND-040",
+    "company_name": "Enterprise Partner 40 Solutions",
+    "domain": "partner40-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-40967",
+    "domain_age_years": 18.5,
+    "credit_score": 88,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 102.0,
+    "employee_count": 530,
+    "notes": "Standard B2B procurement tier vendor (Data)."
+  },
+  {
+    "vendor_id": "VND-041",
+    "company_name": "Enterprise Partner 41 Solutions",
+    "domain": "partner41-solutions.com",
+    "country": "United Kingdom",
+    "registration_number": "REG-41991",
+    "domain_age_years": 18.9,
+    "credit_score": 95,
+    "financial_rating": "AAA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 104.3,
+    "employee_count": 542,
+    "notes": "Standard B2B procurement tier vendor (Logistics)."
+  },
+  {
+    "vendor_id": "VND-042",
+    "company_name": "Enterprise Partner 42 Solutions",
+    "domain": "partner42-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-43015",
+    "domain_age_years": 19.3,
+    "credit_score": 66,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 106.6,
+    "employee_count": 554,
+    "notes": "Standard B2B procurement tier vendor (SaaS)."
+  },
+  {
+    "vendor_id": "VND-043",
+    "company_name": "Enterprise Partner 43 Solutions",
+    "domain": "partner43-solutions.com",
+    "country": "United Kingdom",
+    "registration_number": "REG-44039",
+    "domain_age_years": 19.7,
+    "credit_score": 73,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 108.9,
+    "employee_count": 566,
+    "notes": "Standard B2B procurement tier vendor (Cloud)."
+  },
+  {
+    "vendor_id": "VND-044",
+    "company_name": "Enterprise Partner 44 Solutions",
+    "domain": "partner44-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-45063",
+    "domain_age_years": 20.1,
+    "credit_score": 80,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 111.2,
+    "employee_count": 578,
+    "notes": "Standard B2B procurement tier vendor (Cybersecurity)."
+  },
+  {
+    "vendor_id": "VND-045",
+    "company_name": "Enterprise Partner 45 Solutions",
+    "domain": "partner45-solutions.com",
+    "country": "Germany",
+    "registration_number": "REG-46087",
+    "domain_age_years": 20.5,
+    "credit_score": 87,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 113.5,
+    "employee_count": 590,
+    "notes": "Standard B2B procurement tier vendor (Staffing)."
+  },
+  {
+    "vendor_id": "VND-046",
+    "company_name": "Enterprise Partner 46 Solutions",
+    "domain": "partner46-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-47111",
+    "domain_age_years": 20.9,
+    "credit_score": 94,
+    "financial_rating": "AAA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 115.8,
+    "employee_count": 602,
+    "notes": "Standard B2B procurement tier vendor (Hardware)."
+  },
+  {
+    "vendor_id": "VND-047",
+    "company_name": "Enterprise Partner 47 Solutions",
+    "domain": "partner47-solutions.com",
+    "country": "United Kingdom",
+    "registration_number": "REG-48135",
+    "domain_age_years": 21.3,
+    "credit_score": 65,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 118.1,
+    "employee_count": 614,
+    "notes": "Standard B2B procurement tier vendor (Data)."
+  },
+  {
+    "vendor_id": "VND-048",
+    "company_name": "Enterprise Partner 48 Solutions",
+    "domain": "partner48-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-49159",
+    "domain_age_years": 21.7,
+    "credit_score": 72,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 120.4,
+    "employee_count": 626,
+    "notes": "Standard B2B procurement tier vendor (Logistics)."
+  },
+  {
+    "vendor_id": "VND-049",
+    "company_name": "Enterprise Partner 49 Solutions",
+    "domain": "partner49-solutions.com",
+    "country": "United Kingdom",
+    "registration_number": "REG-50183",
+    "domain_age_years": 22.1,
+    "credit_score": 79,
+    "financial_rating": "A",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 122.7,
+    "employee_count": 638,
+    "notes": "Standard B2B procurement tier vendor (SaaS)."
+  },
+  {
+    "vendor_id": "VND-050",
+    "company_name": "Enterprise Partner 50 Solutions",
+    "domain": "partner50-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-51207",
+    "domain_age_years": 22.5,
+    "credit_score": 86,
+    "financial_rating": "AA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 2,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 125.0,
+    "employee_count": 650,
+    "notes": "Standard B2B procurement tier vendor (Cloud)."
+  },
+  {
+    "vendor_id": "VND-051",
+    "company_name": "Enterprise Partner 51 Solutions",
+    "domain": "partner51-solutions.com",
+    "country": "Germany",
+    "registration_number": "REG-52231",
+    "domain_age_years": 22.9,
+    "credit_score": 93,
+    "financial_rating": "AAA",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 0,
+    "compliance_certifications": [
+      "SOC 2 Type II",
+      "ISO 27001"
+    ],
+    "annual_revenue_usd_m": 127.3,
+    "employee_count": 662,
+    "notes": "Standard B2B procurement tier vendor (Cybersecurity)."
+  },
+  {
+    "vendor_id": "VND-052",
+    "company_name": "Enterprise Partner 52 Solutions",
+    "domain": "partner52-solutions.com",
+    "country": "United States",
+    "registration_number": "REG-53255",
+    "domain_age_years": 23.3,
+    "credit_score": 64,
+    "financial_rating": "BBB",
+    "sanction_pep_status": "CLEARED",
+    "past_litigation_count": 1,
+    "compliance_certifications": [
+      "SOC 2 Type I"
+    ],
+    "annual_revenue_usd_m": 129.6,
+    "employee_count": 674,
+    "notes": "Standard B2B procurement tier vendor (Staffing)."
+  }
+]

@@ -1,0 +1,40 @@
+# Python virtual environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python byte-compiled / cache files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+.coverage
+htmlcov/
+*.log
+
+# Node & Cloudflare Worker build dependencies
+node_modules/
+cloudflare-email-worker/node_modules/
+dist/
+.wrangler/
+
+# Temporary user uploads and generated outputs
+data/uploads/*
+!data/uploads/.gitkeep
+data/incoming/*
+!data/incoming/.gitkeep
+data/outputs/*
+!data/outputs/.gitkeep
+
+# System & IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Environment secrets
+.env
+.env.*
