@@ -33,11 +33,14 @@ function showToast(message, duration = 3500) {
   }, duration);
 }
 
-function escapeHtml(text) {
-  if (!text) return "";
-  const div = document.createElement("div");
-  div.innerText = text;
-  return div.innerHTML;
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 // ---------------- Tabs Navigation ----------------
@@ -246,123 +249,257 @@ function renderRedlineResult(result) {
 }
 
 // ---------------- 2. Corporate Legal Playbook Management ----------------
+async function uploadPlaybookFile(file) {
+  if (!file) return;
+  const fileName = file.name || "";
+  const ext = fileName.slice(fileName.lastIndexOf(".")).toLowerCase();
+  if (ext !== ".yaml" && ext !== ".yml" && ext !== ".json") {
+    showToast("Unsupported file type. Please upload a .yaml, .yml, or .json file.");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+  showToast(`Uploading ${fileName}...`);
+
+  try {
+    const res = await fetch("/api/playbook/upload", { method: "POST", body: formData });
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.detail || "Failed to upload playbook");
+    }
+    showToast(data.message || `Playbook uploaded: ${fileName}`);
+    const uploadPanel = document.getElementById("upload-playbook-panel");
+    if (uploadPanel) uploadPanel.style.display = "none";
+    await loadPlaybook();
+  } catch (err) {
+    showToast(`Playbook error: ${err.message}`);
+  } finally {
+    const fileInput = document.getElementById("playbook-file-input");
+    if (fileInput) fileInput.value = "";
+  }
+}
+
 function initPlaybookManager() {
   const btnUpload = document.getElementById("btn-upload-playbook");
   const fileInput = document.getElementById("playbook-file-input");
+  const uploadPanel = document.getElementById("upload-playbook-panel");
+  const dropZone = document.getElementById("playbook-drop-zone");
+  const btnBrowse = document.getElementById("btn-browse-playbook");
+  const btnCancelUpload = document.getElementById("btn-cancel-upload-playbook");
+  const btnSubmitRaw = document.getElementById("btn-submit-raw-playbook");
+  const rawText = document.getElementById("raw-playbook-text");
+
   const btnToggleAdd = document.getElementById("btn-toggle-add-rule");
   const btnCancelAdd = document.getElementById("btn-cancel-add-rule");
   const addPanel = document.getElementById("add-rule-panel");
   const addForm = document.getElementById("add-rule-form");
   const btnReset = document.getElementById("btn-reset-playbook");
 
-  btnUpload.addEventListener("click", () => fileInput.click());
+  // Toggle Upload Panel
+  if (btnUpload && uploadPanel) {
+    btnUpload.addEventListener("click", () => {
+      const isHidden = uploadPanel.style.display === "none" || uploadPanel.style.display === "";
+      uploadPanel.style.display = isHidden ? "block" : "none";
+      if (addPanel) addPanel.style.display = "none";
+    });
+  }
 
-  fileInput.addEventListener("change", async (e) => {
-    if (e.target.files.length > 0) {
-      const file = e.target.files[0];
-      const formData = new FormData();
-      formData.append("file", file);
+  // Browse file button inside panel
+  if (btnBrowse && fileInput) {
+    btnBrowse.addEventListener("click", () => fileInput.click());
+  }
 
+  // Cancel upload panel
+  if (btnCancelUpload && uploadPanel) {
+    btnCancelUpload.addEventListener("click", () => {
+      uploadPanel.style.display = "none";
+    });
+  }
+
+  // File input change
+  if (fileInput) {
+    fileInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        uploadPlaybookFile(e.target.files[0]);
+      }
+    });
+  }
+
+  // Drag and drop zone
+  if (dropZone) {
+    dropZone.addEventListener("click", (e) => {
+      if (e.target !== btnBrowse && fileInput) fileInput.click();
+    });
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.style.borderColor = "var(--brand-orange)";
+      dropZone.style.backgroundColor = "var(--surface-card)";
+    });
+    dropZone.addEventListener("dragleave", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.style.borderColor = "var(--border-strong)";
+      dropZone.style.backgroundColor = "var(--surface-soft)";
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dropZone.style.borderColor = "var(--border-strong)";
+      dropZone.style.backgroundColor = "var(--surface-soft)";
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        uploadPlaybookFile(e.dataTransfer.files[0]);
+      }
+    });
+  }
+
+  // Submit raw YAML / JSON text
+  if (btnSubmitRaw && rawText) {
+    btnSubmitRaw.addEventListener("click", async () => {
+      const content = rawText.value.trim();
+      if (!content) {
+        showToast("Please enter or paste YAML / JSON playbook text first.");
+        return;
+      }
+      showToast("Applying playbook text...");
       try {
-        const res = await fetch("/api/playbook/upload", { method: "POST", body: formData });
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || "Failed to upload playbook");
-        }
+        const res = await fetch("/api/playbook/raw", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content })
+        });
         const data = await res.json();
-        showToast(data.message || "Playbook uploaded successfully!");
-        loadPlaybook();
+        if (!res.ok) {
+          throw new Error(data.detail || "Failed to update playbook");
+        }
+        showToast(data.message || "Playbook updated successfully!");
+        rawText.value = "";
+        if (uploadPanel) uploadPanel.style.display = "none";
+        await loadPlaybook();
       } catch (err) {
         showToast(`Playbook error: ${err.message}`);
       }
-    }
-  });
+    });
+  }
 
-  btnToggleAdd.addEventListener("click", () => {
-    addPanel.style.display = (addPanel.style.display === "none") ? "block" : "none";
-  });
+  // Toggle Add Rule Panel
+  if (btnToggleAdd && addPanel) {
+    btnToggleAdd.addEventListener("click", () => {
+      const isHidden = addPanel.style.display === "none" || addPanel.style.display === "";
+      addPanel.style.display = isHidden ? "block" : "none";
+      if (uploadPanel) uploadPanel.style.display = "none";
+    });
+  }
 
-  btnCancelAdd.addEventListener("click", () => {
-    addPanel.style.display = "none";
-  });
-
-  addForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const ruleId = document.getElementById("rule-id-input").value.trim();
-    const ruleName = document.getElementById("rule-name-input").value.trim();
-    const clauseType = document.getElementById("rule-clause-type-select").value;
-    const severity = document.getElementById("rule-severity-select").value;
-    const triggersRaw = document.getElementById("rule-triggers-input").value;
-    const forbiddenRaw = document.getElementById("rule-forbidden-input").value;
-    const fallbackText = document.getElementById("rule-fallback-input").value.trim();
-    const comment = document.getElementById("rule-comment-input").value.trim();
-
-    const patternTriggers = triggersRaw ? triggersRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
-    const forbiddenTerms = forbiddenRaw ? forbiddenRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
-
-    const payload = {
-      id: ruleId,
-      name: ruleName,
-      target_clause_type: clauseType,
-      severity: severity,
-      pattern_triggers: patternTriggers,
-      forbidden_terms: forbiddenTerms,
-      required_terms: [],
-      preferred_fallback_text: fallbackText,
-      comment_explanation: comment,
-      guidance_note: "Custom policy rule activated via RedLiner Legal Workbench."
-    };
-
-    try {
-      const res = await fetch("/api/playbook/rule", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.detail || "Failed to save rule");
-      }
-      const data = await res.json();
-      showToast(data.message || `Rule '${ruleName}' saved and activated!`);
+  if (btnCancelAdd && addPanel) {
+    btnCancelAdd.addEventListener("click", () => {
       addPanel.style.display = "none";
-      addForm.reset();
-      loadPlaybook();
-    } catch (err) {
-      showToast(`Rule error: ${err.message}`);
-    }
-  });
+    });
+  }
 
-  btnReset.addEventListener("click", async () => {
-    if (!confirm("Are you sure you want to reset the corporate playbook to standard Enterprise baseline rules?")) return;
-    try {
-      const res = await fetch("/api/playbook/reset", { method: "POST" });
-      if (!res.ok) throw new Error("Reset failed");
-      const data = await res.json();
-      showToast(data.message || "Playbook reset to default!");
-      loadPlaybook();
-    } catch (err) {
-      showToast(`Reset error: ${err.message}`);
-    }
-  });
+  // Add rule form submit
+  if (addForm) {
+    addForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const ruleId = (document.getElementById("rule-id-input")?.value || "").trim();
+      const ruleName = (document.getElementById("rule-name-input")?.value || "").trim();
+      const clauseType = document.getElementById("rule-clause-type-select")?.value;
+      const severity = document.getElementById("rule-severity-select")?.value;
+      const triggersRaw = document.getElementById("rule-triggers-input")?.value || "";
+      const forbiddenRaw = document.getElementById("rule-forbidden-input")?.value || "";
+      const fallbackText = (document.getElementById("rule-fallback-input")?.value || "").trim();
+      const comment = (document.getElementById("rule-comment-input")?.value || "").trim();
+
+      const patternTriggers = triggersRaw ? triggersRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+      const forbiddenTerms = forbiddenRaw ? forbiddenRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+      const payload = {
+        id: ruleId,
+        name: ruleName,
+        target_clause_type: clauseType,
+        severity: severity,
+        pattern_triggers: patternTriggers,
+        forbidden_terms: forbiddenTerms,
+        required_terms: [],
+        preferred_fallback_text: fallbackText,
+        comment_explanation: comment,
+        guidance_note: "Custom policy rule activated via RedLiner Legal Workbench."
+      };
+
+      try {
+        const res = await fetch("/api/playbook/rule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.detail || "Failed to save rule");
+        }
+        showToast(data.message || `Rule '${ruleName}' saved and activated!`);
+        if (addPanel) addPanel.style.display = "none";
+        addForm.reset();
+        await loadPlaybook();
+      } catch (err) {
+        showToast(`Rule error: ${err.message}`);
+      }
+    });
+  }
+
+  // Reset playbook button
+  if (btnReset) {
+    btnReset.addEventListener("click", async () => {
+      if (!confirm("Are you sure you want to reset the corporate playbook to standard Enterprise baseline rules?")) return;
+      try {
+        const res = await fetch("/api/playbook/reset", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "Reset failed");
+        showToast(data.message || "Playbook reset to default!");
+        await loadPlaybook();
+      } catch (err) {
+        showToast(`Reset error: ${err.message}`);
+      }
+    });
+  }
 }
 
 async function loadPlaybook() {
+  const container = document.getElementById("playbook-rules-list");
   try {
-    const res = await fetch("/api/playbook");
-    if (!res.ok) throw new Error("Failed to load playbook");
+    const res = await fetch(`/api/playbook?_t=${Date.now()}`);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`HTTP ${res.status}: ${errText || "Failed to load playbook"}`);
+    }
     const pb = await res.json();
 
-    document.getElementById("pb-title").innerText = pb.name || "Corporate Legal Playbook";
-    document.getElementById("pb-desc").innerText = pb.description || "";
-    document.getElementById("pb-version").innerText = pb.version || "2026.1";
-    document.getElementById("pb-author").innerText = pb.author || "RedLiner Counsel";
-    document.getElementById("playbook-rules-badge").innerText = `${pb.total_rules || pb.rules.length} rules`;
-    document.getElementById("header-playbook-name").innerHTML = `Playbook: <strong>${escapeHtml(pb.name)}</strong>`;
+    const titleEl = document.getElementById("pb-title");
+    if (titleEl) titleEl.innerText = pb.name || "Corporate Legal Playbook";
+    const descEl = document.getElementById("pb-desc");
+    if (descEl) descEl.innerText = pb.description || "";
+    const verEl = document.getElementById("pb-version");
+    if (verEl) verEl.innerText = pb.version || "2026.1";
+    const authEl = document.getElementById("pb-author");
+    if (authEl) authEl.innerText = pb.author || "RedLiner Counsel";
+    const badgeEl = document.getElementById("playbook-rules-badge");
+    if (badgeEl) badgeEl.innerText = `${pb.total_rules || (pb.rules ? pb.rules.length : 0)} rules`;
+    const headerPbEl = document.getElementById("header-playbook-name");
+    if (headerPbEl) headerPbEl.innerHTML = `Playbook: <strong>${escapeHtml(pb.name)}</strong>`;
 
     renderPlaybookRules(pb.rules || []);
   } catch (err) {
     console.error("Error loading playbook:", err);
+    if (container) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 36px 20px; background-color: var(--surface-soft); border: 1px solid var(--border-strong); border-radius: var(--radius-md);">
+          <div style="font-size: 28px; margin-bottom: 8px;">⚠️</div>
+          <h4 style="font-size: 15px; font-weight: 700; color: var(--ink-primary); margin-bottom: 6px;">Failed to load Playbook Rules</h4>
+          <p style="font-size: 13px; color: var(--ink-muted); margin-bottom: 16px;">${escapeHtml(err.message)}</p>
+          <button class="btn btn-secondary" onclick="loadPlaybook()" style="margin: 0 auto;">🔄 Retry Loading Playbook</button>
+        </div>
+      `;
+    }
   }
 }
 

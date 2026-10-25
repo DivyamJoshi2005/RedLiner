@@ -3,7 +3,7 @@ import shutil
 import yaml
 from pathlib import Path
 from typing import Optional, List, Dict, Any
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -51,6 +51,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.middleware("http")
+async def add_no_cache_headers(request: Request, call_next):
+    response = await call_next(request)
+    if request.url.path.endswith((".js", ".html", ".css")) or request.url.path == "/":
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+    return response
 
 # Core Supervisor & Specialized Agents / Subgraphs
 orchestrator = MainOrchestrator()
@@ -202,15 +211,40 @@ def get_active_playbook():
 async def upload_playbook(file: UploadFile = File(...)):
     """Uploads an updated YAML or JSON playbook file and immediately activates it across agents."""
     playbook_file = PLAYBOOKS_DIR / "enterprise_playbook.yaml"
+    temp_file = PLAYBOOKS_DIR / f"temp_{file.filename}"
     content = await file.read()
     try:
         parsed = yaml.safe_load(content)
-        if not isinstance(parsed, dict) or "rules" not in parsed:
-            raise ValueError("Playbook must be a YAML object containing a 'rules' list.")
-        
-        # Save to disk
-        with open(playbook_file, "wb") as f:
-            f.write(content)
+        if isinstance(parsed, list):
+            parsed = {
+                "name": f"Custom Corporate Playbook ({file.filename})",
+                "version": "2026.upload",
+                "description": "User uploaded corporate rules",
+                "author": "Enterprise Legal Operations",
+                "rules": parsed
+            }
+        elif isinstance(parsed, dict):
+            if "rules" not in parsed:
+                for alt in ["policies", "clauses", "playbook", "items"]:
+                    if alt in parsed and isinstance(parsed[alt], list):
+                        parsed["rules"] = parsed[alt]
+                        break
+            if "rules" not in parsed:
+                raise ValueError("Playbook must contain a list of 'rules'.")
+        else:
+            raise ValueError("Playbook must be a YAML or JSON object with a 'rules' list.")
+
+        # Test write to temp file first
+        with open(temp_file, "w", encoding="utf-8") as f:
+            yaml.dump(parsed, f, sort_keys=False, allow_unicode=True)
+
+        from subgraphs.playbook_matcher.policy_comparator import PolicyComparator
+        test_comp = PolicyComparator(temp_file)
+        if len(test_comp.rules) == 0:
+            raise ValueError("Uploaded playbook contained 0 valid rules.")
+
+        # Atomically replace active file
+        shutil.move(temp_file, playbook_file)
 
         # Reload comparator in memory across agents
         legal_redliner.reload_playbook(playbook_file)
@@ -218,11 +252,66 @@ async def upload_playbook(file: UploadFile = File(...)):
 
         return {
             "status": "SUCCESS",
-            "message": f"Active Playbook updated with {len(parsed['rules'])} rules.",
+            "message": f"Active Playbook updated with {len(test_comp.rules)} verified rules.",
             "playbook": legal_redliner.subgraph.comparator.to_dict()
         }
     except Exception as e:
+        if temp_file.exists():
+            temp_file.unlink()
         raise HTTPException(status_code=400, detail=f"Invalid playbook format: {str(e)}")
+
+
+class RawPlaybookPayload(BaseModel):
+    content: str
+
+
+@app.post("/api/playbook/raw")
+def save_raw_playbook(payload: RawPlaybookPayload):
+    """Directly updates the active playbook via pasted YAML or JSON text."""
+    playbook_file = PLAYBOOKS_DIR / "enterprise_playbook.yaml"
+    temp_file = PLAYBOOKS_DIR / "temp_raw_upload.yaml"
+    try:
+        parsed = yaml.safe_load(payload.content)
+        if isinstance(parsed, list):
+            parsed = {
+                "name": "Custom Corporate Legal Playbook",
+                "version": "2026.custom",
+                "description": "Custom edited legal guardrails",
+                "author": "Corporate Counsel",
+                "rules": parsed
+            }
+        elif isinstance(parsed, dict):
+            if "rules" not in parsed:
+                for alt in ["policies", "clauses", "playbook", "items"]:
+                    if alt in parsed and isinstance(parsed[alt], list):
+                        parsed["rules"] = parsed[alt]
+                        break
+            if "rules" not in parsed:
+                raise ValueError("Playbook must contain a list of 'rules'.")
+        else:
+            raise ValueError("Playbook content must be a YAML or JSON object with a 'rules' list.")
+
+        with open(temp_file, "w", encoding="utf-8") as f:
+            yaml.dump(parsed, f, sort_keys=False, allow_unicode=True)
+
+        from subgraphs.playbook_matcher.policy_comparator import PolicyComparator
+        test_comp = PolicyComparator(temp_file)
+        if len(test_comp.rules) == 0:
+            raise ValueError("Provided playbook contained 0 valid rules.")
+
+        shutil.move(temp_file, playbook_file)
+        legal_redliner.reload_playbook(playbook_file)
+        orchestrator.reload_playbook(playbook_file)
+
+        return {
+            "status": "SUCCESS",
+            "message": f"Playbook updated with {len(test_comp.rules)} active rules.",
+            "playbook": legal_redliner.subgraph.comparator.to_dict()
+        }
+    except Exception as e:
+        if temp_file.exists():
+            temp_file.unlink()
+        raise HTTPException(status_code=400, detail=f"Failed to update playbook: {str(e)}")
 
 
 class PlaybookRulePayload(BaseModel):
@@ -242,11 +331,12 @@ class PlaybookRulePayload(BaseModel):
 def add_or_update_rule(payload: PlaybookRulePayload):
     """Adds a new custom policy rule or updates an existing rule in the active corporate playbook."""
     try:
+        from subgraphs.playbook_matcher.policy_comparator import normalize_clause_type, normalize_severity
         rule = PlaybookRule(
             id=payload.id,
             name=payload.name,
-            target_clause_type=ClauseType(payload.target_clause_type),
-            severity=SeverityLevel(payload.severity),
+            target_clause_type=normalize_clause_type(payload.target_clause_type),
+            severity=normalize_severity(payload.severity),
             pattern_triggers=payload.pattern_triggers,
             forbidden_terms=payload.forbidden_terms,
             required_terms=payload.required_terms,

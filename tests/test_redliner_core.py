@@ -221,6 +221,18 @@ def test_api_endpoints():
     })
     assert resp_add_rule.status_code == 200
 
+    # Test raw playbook upload
+    resp_raw = client.post("/api/playbook/raw", json={
+        "content": "name: Test Playbook\nrules:\n  - id: R1\n    name: R1\n    target_clause_type: LIABILITY_CAP\n    severity: HIGH\n    preferred_fallback_text: Mutual cap.\n    comment_explanation: Fallback."
+    })
+    assert resp_raw.status_code == 200
+    assert resp_raw.json()["playbook"]["total_rules"] == 1
+
+    # Reset playbook to baseline
+    resp_reset = client.post("/api/playbook/reset")
+    assert resp_reset.status_code == 200
+    assert resp_reset.json()["playbook"]["total_rules"] == 7
+
     # 8. Email Config API
     resp_cfg = client.get("/api/email/config")
     assert resp_cfg.status_code == 200

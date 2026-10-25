@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>RedLiner — B2B Autonomous Contract Negotiation & Legal Redlining</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=2026.5">
 </head>
 <body>
 
@@ -42,11 +45,11 @@
       </button>
       <button class="nav-tab" data-tab="playbook-tab">
         <span>📜 Corporate Legal Playbook</span>
-        <span class="tab-badge" id="playbook-rules-badge">7 rules</span>
+        <span class="tab-badge" id="playbook-rules-badge">8 rules</span>
       </button>
       <button class="nav-tab" data-tab="vendor-tab">
         <span>🛡️ Vendor Intelligence Radar</span>
-        <span class="tab-badge" id="vendor-count-badge">56 vendors</span>
+        <span class="tab-badge" id="vendor-count-badge">57 vendors</span>
       </button>
       <button class="nav-tab" data-tab="email-tab">
         <span>✉️ Cloudflare Email Dispatcher</span>
@@ -95,7 +98,7 @@
           Screened Counterparties
           <span class="info-icon" title="Live dynamic count of screened vendors stored permanently in SQLite">ⓘ</span>
         </div>
-        <div class="metric-value" id="kpi-vendors-count">56</div>
+        <div class="metric-value" id="kpi-vendors-count">57</div>
         <div class="metric-note">Live SQLite Due-Diligence DB</div>
       </div>
     </div>
@@ -216,7 +219,7 @@
           <div style="display: flex; gap: 8px;">
             <input type="file" id="playbook-file-input" style="display: none;" accept=".yaml,.yml,.json">
             <button class="btn btn-secondary" id="btn-upload-playbook">
-              <span>📁 Upload Updated Playbook (.yaml)</span>
+              <span>📁 Upload / Update Playbook (.yaml)</span>
             </button>
             <button class="btn btn-secondary" id="btn-toggle-add-rule">
               <span>+ Add Policy Rule</span>
@@ -237,6 +240,35 @@
             <div style="text-align: right; font-size: 12px; color: var(--ink-muted);">
               <div>Version: <strong id="pb-version">2026.1</strong></div>
               <div>Author: <span id="pb-author">RedLiner General Counsel</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Upload / Import Playbook Panel (Collapsed by default) -->
+        <div id="upload-playbook-panel" style="display: none; background-color: var(--surface-card); border: 1px solid var(--brand-orange); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
+          <h3 style="font-size: 15px; font-weight: 700; color: var(--ink-primary); margin-bottom: 12px;">📁 Upload or Paste Updated Corporate Playbook</h3>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <!-- Option 1: File Upload Drop Zone -->
+            <div style="border: 2px dashed var(--border-strong); border-radius: var(--radius-md); padding: 24px; text-align: center; background-color: var(--surface-soft);" id="playbook-drop-zone">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 10px; color: var(--ink-muted);">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+              <p style="font-weight: 700; font-size: 14px; color: var(--ink-primary); margin-bottom: 4px;">Select Playbook File</p>
+              <p style="font-size: 12px; color: var(--ink-muted); margin-bottom: 14px;">Supports YAML (.yaml, .yml) and JSON (.json)</p>
+              <button type="button" class="btn btn-secondary" id="btn-browse-playbook" style="margin: 0 auto;">Browse File from Computer</button>
+            </div>
+
+            <!-- Option 2: Paste Raw YAML / JSON -->
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Or Paste Playbook YAML / JSON Text directly:</label>
+              <textarea id="raw-playbook-text" class="search-input" rows="7" style="width: 100%; font-family: monospace; font-size: 11px; resize: vertical;" placeholder="name: Custom Enterprise Playbook&#10;rules:&#10;  - id: RULE_CUSTOM_01&#10;    name: Custom Limit&#10;    target_clause_type: LIABILITY_CAP&#10;    severity: CRITICAL&#10;    preferred_fallback_text: Except for gross negligence, liability shall not exceed fees paid...&#10;    comment_explanation: Playbook compliance rule."></textarea>
+              <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px;">
+                <button type="button" class="btn btn-secondary" id="btn-cancel-upload-playbook">Cancel</button>
+                <button type="button" class="btn btn-primary" id="btn-submit-raw-playbook">Apply Playbook Text</button>
+              </div>
             </div>
           </div>
         </div>
@@ -568,6 +600,6 @@
   <!-- Toast Notification Container -->
   <div class="toast-container" id="toast-container"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=2026.5"></script>
 </body>
 </html>
