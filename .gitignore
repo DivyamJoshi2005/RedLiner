@@ -38,3 +38,5 @@ Thumbs.db
 # Environment secrets
 .env
 .env.*
+data/email_config.json
+*.backup.yaml

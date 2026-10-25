@@ -1,12 +1,13 @@
 import os
 import shutil
+import yaml
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from core.models import (
     ParsedDocument,
@@ -14,6 +15,9 @@ from core.models import (
     VendorProfile,
     InboundEmailWebhook,
     OutboundEmailRequest,
+    PlaybookRule,
+    ClauseType,
+    SeverityLevel,
 )
 from agents.orchestrator import MainOrchestrator
 from agents.legal_redliner import LegalRedlinerAgent
@@ -21,6 +25,7 @@ from agents.vendor_intelligence import VendorIntelligenceAgent
 from agents.email_writer import EmailWriterAgent
 from subgraphs.document_parser import DocumentParserSubgraph
 from subgraphs.human_approval import FeedbackAgent
+from subgraphs.vendor_information.osint_collectors import OSINTCollector
 from Helpers.logger import get_recent_logs
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -28,6 +33,7 @@ UPLOADS_DIR = BASE_DIR / "data" / "uploads"
 OUTPUTS_DIR = BASE_DIR / "data" / "outputs"
 SAMPLE_DIR = BASE_DIR / "data" / "sample_contracts"
 DASHBOARD_DIR = BASE_DIR / "dashboard"
+PLAYBOOKS_DIR = BASE_DIR / "playbooks"
 
 UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 OUTPUTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -158,31 +164,172 @@ def download_redlined_file(filename: str):
     )
 
 
+# ---------------------------------------------------------------------------
+# VENDOR INTELLIGENCE & OSINT ENDPOINTS
+# ---------------------------------------------------------------------------
+
+@app.get("/api/vendor/stats")
+def get_vendor_stats():
+    """Returns dynamic statistics on screened counterparties from the SQLite database."""
+    return OSINTCollector.get_database_stats()
+
+
 @app.get("/api/vendor/search")
-def search_vendors(q: str = "", limit: int = 25):
-    """Executes VendorInformationSubgraph search."""
+def search_vendors(q: str = "", limit: int = 50):
+    """Executes VendorInformationSubgraph search with persistence."""
     return vendor_intelligence.search_vendors(q, limit)
 
 
 @app.get("/api/vendor/assess")
 def assess_vendor(name: str):
-    """Executes VendorInformationSubgraph multi-factor risk assessment."""
+    """Executes dynamic OSINT risk assessment on a vendor and permanently stores into SQLite."""
     if not name.strip():
         raise HTTPException(status_code=400, detail="Vendor name or domain is required.")
     return vendor_intelligence.evaluate_counterparty(name)
+
+
+# ---------------------------------------------------------------------------
+# CORPORATE LEGAL PLAYBOOK ENDPOINTS
+# ---------------------------------------------------------------------------
+
+@app.get("/api/playbook")
+def get_active_playbook():
+    """Returns the currently active corporate legal playbook configuration and all rules."""
+    return legal_redliner.subgraph.comparator.to_dict()
+
+
+@app.post("/api/playbook/upload")
+async def upload_playbook(file: UploadFile = File(...)):
+    """Uploads an updated YAML or JSON playbook file and immediately activates it across agents."""
+    playbook_file = PLAYBOOKS_DIR / "enterprise_playbook.yaml"
+    content = await file.read()
+    try:
+        parsed = yaml.safe_load(content)
+        if not isinstance(parsed, dict) or "rules" not in parsed:
+            raise ValueError("Playbook must be a YAML object containing a 'rules' list.")
+        
+        # Save to disk
+        with open(playbook_file, "wb") as f:
+            f.write(content)
+
+        # Reload comparator in memory across agents
+        legal_redliner.reload_playbook(playbook_file)
+        orchestrator.reload_playbook(playbook_file)
+
+        return {
+            "status": "SUCCESS",
+            "message": f"Active Playbook updated with {len(parsed['rules'])} rules.",
+            "playbook": legal_redliner.subgraph.comparator.to_dict()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid playbook format: {str(e)}")
+
+
+class PlaybookRulePayload(BaseModel):
+    id: str
+    name: str
+    target_clause_type: str
+    severity: str
+    pattern_triggers: List[str] = Field(default_factory=list)
+    forbidden_terms: List[str] = Field(default_factory=list)
+    required_terms: List[str] = Field(default_factory=list)
+    preferred_fallback_text: str
+    comment_explanation: str
+    guidance_note: Optional[str] = None
+
+
+@app.post("/api/playbook/rule")
+def add_or_update_rule(payload: PlaybookRulePayload):
+    """Adds a new custom policy rule or updates an existing rule in the active corporate playbook."""
+    try:
+        rule = PlaybookRule(
+            id=payload.id,
+            name=payload.name,
+            target_clause_type=ClauseType(payload.target_clause_type),
+            severity=SeverityLevel(payload.severity),
+            pattern_triggers=payload.pattern_triggers,
+            forbidden_terms=payload.forbidden_terms,
+            required_terms=payload.required_terms,
+            preferred_fallback_text=payload.preferred_fallback_text,
+            comment_explanation=payload.comment_explanation,
+            guidance_note=payload.guidance_note,
+        )
+        legal_redliner.subgraph.comparator.add_or_update_rule(rule)
+        orchestrator.reload_playbook()
+        return {
+            "status": "SUCCESS",
+            "message": f"Rule '{payload.name}' saved and activated.",
+            "playbook": legal_redliner.subgraph.comparator.to_dict()
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to save rule: {str(e)}")
+
+
+@app.post("/api/playbook/reset")
+def reset_playbook():
+    """Resets the corporate playbook to standard default Fortune 500 SaaS v2026.1 rules."""
+    legal_redliner.subgraph.comparator.reset_to_default()
+    orchestrator.reload_playbook()
+    return {
+        "status": "SUCCESS",
+        "message": "Playbook successfully reset to default Enterprise SaaS v2026.1 baseline.",
+        "playbook": legal_redliner.subgraph.comparator.to_dict()
+    }
+
+
+# ---------------------------------------------------------------------------
+# EMAIL DISPATCH & CONFIGURATION ENDPOINTS
+# ---------------------------------------------------------------------------
+
+@app.get("/api/email/config")
+def get_email_config():
+    """Returns current email dispatch configuration with masked passwords."""
+    return email_writer.service.get_config(mask_secret=True)
+
+
+class EmailConfigUpdate(BaseModel):
+    provider: str
+    smtp_host: Optional[str] = "smtp.gmail.com"
+    smtp_port: Optional[int] = 587
+    smtp_user: Optional[str] = ""
+    smtp_password: Optional[str] = ""
+    smtp_use_tls: Optional[bool] = True
+    from_email: Optional[str] = "procurement@redliner.ai"
+    from_name: Optional[str] = "RedLiner Enterprise Procurement"
+    resend_api_key: Optional[str] = ""
+
+
+@app.post("/api/email/config")
+def update_email_config(cfg: EmailConfigUpdate):
+    """Updates SMTP or Resend credentials for live outbound email dispatch."""
+    updated = email_writer.service.update_config(cfg.dict(exclude_unset=True))
+    return {"status": "SUCCESS", "message": "Email configuration saved successfully.", "config": updated}
+
+
+class SendTestEmailRequest(BaseModel):
+    target_email: str
+
+
+@app.post("/api/email/send-test")
+def send_test_email(req: SendTestEmailRequest):
+    """Sends a verification email to ensure direct SMTP or Resend connection is healthy."""
+    try:
+        res = email_writer.service.send_test_email(req.target_email)
+        return {"status": "SUCCESS", "result": res}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Test email failed: {str(e)}")
 
 
 @app.post("/api/webhook/email")
 def inbound_email_webhook(payload: InboundEmailWebhook, auto_process: bool = True):
     """
     Inbound Cloudflare Email Routing Webhook receiver.
-    Extracts vendor .docx/.pdf attachments and automatically executes
-    the MainOrchestrator pipeline (parsing, vendor screening, playbook redlining, and counter-proposal drafting).
+    Extracts vendor .docx/.pdf attachments, runs OSINT screening, executes legal redlining,
+    and drafts a structured counter-proposal email.
     """
     inbound_res = email_writer.service.process_inbound_webhook(payload)
     saved_attachments = inbound_res.get("saved_attachments", [])
 
-    # If no attachment was sent, check if a sample contract was referenced in subject or default
     if not saved_attachments:
         default_sample = SAMPLE_DIR / "vendor_saas_agreement.docx"
         if default_sample.exists():
@@ -195,12 +342,13 @@ def inbound_email_webhook(payload: InboundEmailWebhook, auto_process: bool = Tru
             "message": "Email received without attachments."
         }
 
-    # Automatically process the primary attached contract
     contract_file_path = Path(saved_attachments[0])
     
     # Infer vendor name from sender email domain or sender name
     from_domain = payload.from_email.split("@")[-1] if "@" in payload.from_email else "vendor"
     vendor_query = payload.from_name if payload.from_name and payload.from_name != payload.from_email else from_domain
+    if vendor_query.lower() in ["gmail.com", "yahoo.com", "outlook.com", "hotmail.com"]:
+        vendor_query = "Vendor Counterparty"
 
     deal_id = f"DEAL-EMAIL-{payload.message_id[:12]}"
 

@@ -196,6 +196,36 @@ def test_api_endpoints():
     assert resp_logs.status_code == 200
     assert len(resp_logs.json()) > 0
 
+    # 6. Vendor Stats API
+    resp_stats = client.get("/api/vendor/stats")
+    assert resp_stats.status_code == 200
+    assert resp_stats.json()["total_vendors"] >= 52
+
+    # 7. Playbook API & Dynamic Management
+    resp_playbook = client.get("/api/playbook")
+    assert resp_playbook.status_code == 200
+    assert resp_playbook.json()["total_rules"] >= 7
+
+    # Add custom rule to playbook
+    resp_add_rule = client.post("/api/playbook/rule", json={
+        "id": "RULE_CONF_999",
+        "name": "Strict Mutual Confidentiality 5-Year",
+        "target_clause_type": "CONFIDENTIALITY",
+        "severity": "HIGH",
+        "pattern_triggers": ["one year", "12 months"],
+        "forbidden_terms": ["1 year confidentiality"],
+        "required_terms": ["five (5) years"],
+        "preferred_fallback_text": "Confidentiality obligations shall survive for a period of five (5) years.",
+        "comment_explanation": "RedLiner policy requires 5-year confidentiality.",
+        "guidance_note": "Core information security policy."
+    })
+    assert resp_add_rule.status_code == 200
+
+    # 8. Email Config API
+    resp_cfg = client.get("/api/email/config")
+    assert resp_cfg.status_code == 200
+    assert "provider" in resp_cfg.json()
+
 
 def test_helpers_folder_integrity():
     helpers_dir = BASE_DIR / "Helpers"

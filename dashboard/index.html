@@ -27,7 +27,7 @@
           <span>Core Agentic Backend: <strong>Active</strong></span>
         </div>
         <div class="status-pill">
-          <span>Playbook: <strong>Enterprise SaaS v2026.1</strong></span>
+          <span id="header-playbook-name">Playbook: <strong>Enterprise SaaS v2026.1</strong></span>
         </div>
       </div>
     </div>
@@ -40,9 +40,13 @@
         <span>📑 Document Parser & Redliner</span>
         <span class="tab-badge" id="violations-count-badge">7 edits</span>
       </button>
+      <button class="nav-tab" data-tab="playbook-tab">
+        <span>📜 Corporate Legal Playbook</span>
+        <span class="tab-badge" id="playbook-rules-badge">7 rules</span>
+      </button>
       <button class="nav-tab" data-tab="vendor-tab">
         <span>🛡️ Vendor Intelligence Radar</span>
-        <span class="tab-badge" id="vendor-count-badge">52 vendors</span>
+        <span class="tab-badge" id="vendor-count-badge">56 vendors</span>
       </button>
       <button class="nav-tab" data-tab="email-tab">
         <span>✉️ Cloudflare Email Dispatcher</span>
@@ -57,27 +61,42 @@
   <!-- Main Container -->
   <main class="app-main">
 
-    <!-- Top KPI Row -->
+    <!-- Top KPI Row with Human-Understandable Captions -->
     <div class="metrics-row">
-      <div class="metric-card">
-        <div class="metric-label">Negotiation Cycle Time</div>
+      <div class="metric-card" title="WorldCC Benchmark: Traditional manual B2B review takes 3.4 weeks on average. RedLiner's autonomous multi-agent pipeline completes in ~2.4 minutes.">
+        <div class="metric-label">
+          Negotiation Cycle Time 
+          <span class="info-icon" title="Benchmark: Autonomous agent cycle takes ~2.4 mins vs 3.4 weeks manual legal turnaround">ⓘ</span>
+        </div>
         <div class="metric-value">2.4 min</div>
         <div class="metric-note">Down from manual 3.4 weeks</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Contract Value Protection</div>
+
+      <div class="metric-card" title="WorldCC Benchmark: Organizations experience 8.6% contract value erosion during negotiations. RedLiner's deterministic trade-off scoring halts this erosion.">
+        <div class="metric-label">
+          Contract Value Protection
+          <span class="info-icon" title="Halts 8.6% commercial value loss via deterministic trade-off guardrails">ⓘ</span>
+        </div>
         <div class="metric-value">91.4%</div>
         <div class="metric-note">Halts 8.6% value erosion</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Tracked Changes Quality</div>
+
+      <div class="metric-card" title="100% compliant Microsoft Word OpenXML: Injects native Word strikethroughs (<w:del>), insertions (<w:ins>), and margin comments (<w:comment>) directly into .docx files.">
+        <div class="metric-label">
+          Tracked Changes Quality
+          <span class="info-icon" title="100% native Word OpenXML & comments — no Markdown or simulated text diffs">ⓘ</span>
+        </div>
         <div class="metric-value">100%</div>
         <div class="metric-note">Native Word OpenXML & comments</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-label">Screened Counterparties</div>
-        <div class="metric-value" id="kpi-vendors-count">52</div>
-        <div class="metric-note">Real-time OSINT & Sanctions checks</div>
+
+      <div class="metric-card" title="Live SQLite Counter: Total vendor counterparties screened for OFAC sanctions, credit risk, domain age, and security compliance. Updates dynamically when new vendors are assessed.">
+        <div class="metric-label">
+          Screened Counterparties
+          <span class="info-icon" title="Live dynamic count of screened vendors stored permanently in SQLite">ⓘ</span>
+        </div>
+        <div class="metric-value" id="kpi-vendors-count">56</div>
+        <div class="metric-note">Live SQLite Due-Diligence DB</div>
       </div>
     </div>
 
@@ -140,7 +159,7 @@
             <div class="card-header">
               <div>
                 <h2 class="card-title">2. Legal Redliner Review Workbench</h2>
-                <p class="card-desc">Autonomous tracked changes (<w:del>, <w:ins>) and margin comments</p>
+                <p class="card-desc">Autonomous tracked changes (&lt;w:del&gt;, &lt;w:ins&gt;) and margin comments (&lt;w:comment&gt;)</p>
               </div>
               <div id="redline-action-buttons" style="display: none; gap: 8px;">
                 <a id="download-docx-btn" class="btn btn-primary" href="#" download>
@@ -186,13 +205,124 @@
       </div>
     </section>
 
-    <!-- TAB 2: Vendor Intelligence Radar -->
+    <!-- TAB 2: Corporate Legal Playbook Management -->
+    <section id="playbook-tab" class="tab-content">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2 class="card-title">Corporate Legal Playbook & Governance Rules</h2>
+            <p class="card-desc">Active policies enforced by the Legal Redliner Agent during contract negotiation.</p>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <input type="file" id="playbook-file-input" style="display: none;" accept=".yaml,.yml,.json">
+            <button class="btn btn-secondary" id="btn-upload-playbook">
+              <span>📁 Upload Updated Playbook (.yaml)</span>
+            </button>
+            <button class="btn btn-secondary" id="btn-toggle-add-rule">
+              <span>+ Add Policy Rule</span>
+            </button>
+            <button class="btn btn-secondary" id="btn-reset-playbook" title="Restore baseline 7-rule Fortune 500 SaaS playbook">
+              <span>↺ Reset to Default</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Playbook Metadata Header Banner -->
+        <div id="playbook-meta-banner" style="padding: 16px 20px; background-color: var(--surface-soft); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); margin-bottom: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <h3 id="pb-title" style="font-size: 16px; font-weight: 700; color: var(--ink-primary);">Enterprise Corporate Legal Playbook</h3>
+              <p id="pb-desc" style="font-size: 13px; color: var(--ink-muted); margin-top: 2px;">Standard procurement & SaaS vendor onboarding guardrails.</p>
+            </div>
+            <div style="text-align: right; font-size: 12px; color: var(--ink-muted);">
+              <div>Version: <strong id="pb-version">2026.1</strong></div>
+              <div>Author: <span id="pb-author">RedLiner General Counsel</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Policy Rule Form (Collapsed by default) -->
+        <div id="add-rule-panel" style="display: none; background-color: var(--surface-card); border: 1px solid var(--brand-orange); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
+          <h3 style="font-size: 15px; font-weight: 700; color: var(--ink-primary); margin-bottom: 12px;">Add Custom Legal Playbook Rule</h3>
+          <form id="add-rule-form" style="display: flex; flex-direction: column; gap: 12px;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Rule ID</label>
+                <input type="text" id="rule-id-input" class="search-input" style="width: 100%;" placeholder="e.g. RULE_CONF_008" required>
+              </div>
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Rule Name</label>
+                <input type="text" id="rule-name-input" class="search-input" style="width: 100%;" placeholder="e.g. 5-Year Confidentiality Term" required>
+              </div>
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Target Clause Type</label>
+                <select id="rule-clause-type-select" class="search-input" style="width: 100%;">
+                  <option value="LIABILITY_CAP">LIABILITY_CAP</option>
+                  <option value="INDEMNIFICATION">INDEMNIFICATION</option>
+                  <option value="IP_RIGHTS">IP_RIGHTS</option>
+                  <option value="GOVERNING_LAW">GOVERNING_LAW</option>
+                  <option value="PAYMENT_TERMS">PAYMENT_TERMS</option>
+                  <option value="TERMINATION">TERMINATION</option>
+                  <option value="CONFIDENTIALITY">CONFIDENTIALITY</option>
+                  <option value="DATA_PRIVACY_SECURITY">DATA_PRIVACY_SECURITY</option>
+                  <option value="WARRANTIES_REPRESENTATIONS">WARRANTIES_REPRESENTATIONS</option>
+                  <option value="NON_SOLICITATION">NON_SOLICITATION</option>
+                  <option value="FORCE_MAJEURE">FORCE_MAJEURE</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px;">
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Severity Level</label>
+                <select id="rule-severity-select" class="search-input" style="width: 100%;">
+                  <option value="CRITICAL">CRITICAL</option>
+                  <option value="HIGH">HIGH</option>
+                  <option value="MEDIUM">MEDIUM</option>
+                  <option value="LOW">LOW</option>
+                </select>
+              </div>
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Trigger Patterns (comma-separated)</label>
+                <input type="text" id="rule-triggers-input" class="search-input" style="width: 100%;" placeholder="e.g. 1 year, 12 months, expires in one year">
+              </div>
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Forbidden Terms (comma-separated)</label>
+                <input type="text" id="rule-forbidden-input" class="search-input" style="width: 100%;" placeholder="e.g. 1 year confidentiality">
+              </div>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Preferred Fallback Text (Inserted into &lt;w:ins&gt;)</label>
+              <textarea id="rule-fallback-input" class="search-input" rows="3" style="width: 100%; resize: vertical;" placeholder="Exact approved contract text that RedLiner will replace the clause with..." required></textarea>
+            </div>
+
+            <div>
+              <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Comment Explanation (Inserted into Word &lt;w:comment&gt;)</label>
+              <textarea id="rule-comment-input" class="search-input" rows="2" style="width: 100%; resize: vertical;" placeholder="Rationale explaining the corporate policy to vendor counsel..." required></textarea>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 8px;">
+              <button type="button" class="btn btn-secondary" id="btn-cancel-add-rule">Cancel</button>
+              <button type="submit" class="btn btn-primary">Save & Activate Rule</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Rules Display Grid -->
+        <div id="playbook-rules-list">
+          <p style="text-align: center; color: var(--ink-muted); padding: 30px;">Loading playbook rules...</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: Vendor Intelligence Radar -->
     <section id="vendor-tab" class="tab-content">
       <div class="card">
         <div class="card-header">
           <div>
             <h2 class="card-title">Vendor Intelligence & OSINT Risk Radar</h2>
-            <p class="card-desc">Screen counterparty credit ratings, sanctions/PEP status, domain age, and security compliance.</p>
+            <p class="card-desc">Screen counterparty credit ratings, sanctions/PEP status, domain age, and security compliance. Stored permanently in SQLite.</p>
           </div>
           <div>
             <button class="btn btn-secondary" id="btn-assess-new-vendor">
@@ -202,19 +332,19 @@
         </div>
 
         <div class="search-bar-row">
-          <input type="text" id="vendor-search-input" class="search-input" placeholder="Search by vendor name, domain (e.g. apexcloud.io, severo-export.ru), or jurisdiction...">
+          <input type="text" id="vendor-search-input" class="search-input" placeholder="Search by vendor name (e.g. Google, Amazon, ApexCloud), domain, or country...">
           <button class="btn btn-secondary" id="btn-filter-all">All</button>
           <button class="btn btn-secondary" id="btn-filter-low">Low Risk</button>
           <button class="btn btn-secondary" id="btn-filter-flagged">Flagged / Sanctions</button>
         </div>
 
         <div id="vendor-cards-container" class="vendor-grid">
-          <!-- Dynamically populated vendor cards -->
+          <!-- Dynamically populated vendor cards from SQLite -->
         </div>
       </div>
     </section>
 
-    <!-- TAB 3: Cloudflare Email Ingestion & Outbound Dispatch -->
+    <!-- TAB 4: Cloudflare Email Ingestion & Outbound Dispatch -->
     <section id="email-tab" class="tab-content">
       <div class="workbench-grid">
         
@@ -275,14 +405,67 @@
             </div>
           </div>
 
-          <div class="card">
-            <h2 class="card-title">Cloudflare Worker Config</h2>
-            <div style="font-size: 12px; color: var(--ink-muted); line-height: 1.6; margin-top: 10px;">
-              <p><strong>Worker:</strong> <code>redliner-email-worker</code></p>
-              <p><strong>Routing Hook:</strong> <code>email(message, env, ctx)</code></p>
-              <p><strong>Webhook Receiver:</strong> <code>/api/webhook/email</code></p>
-              <p><strong>Dispatch Endpoint:</strong> <code>/api/send-email</code></p>
+          <!-- Email Delivery Settings (SMTP / Resend Configuration) -->
+          <div class="card" style="margin-top: 16px;">
+            <div class="card-header">
+              <div>
+                <h2 class="card-title">⚙️ Email Delivery Settings</h2>
+                <p class="card-desc">Configure Direct SMTP or Resend to deliver real emails to actual inbox.</p>
+              </div>
             </div>
+
+            <form id="email-config-form" style="display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                <label style="display: block; font-size: 12px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Delivery Provider</label>
+                <select id="cfg-provider-select" class="search-input" style="width: 100%;">
+                  <option value="sandbox">Simulated Sandbox (Offline / Local Mode)</option>
+                  <option value="smtp">Direct SMTP (Gmail / Outlook / Brevo / Custom)</option>
+                  <option value="resend">Resend API</option>
+                </select>
+              </div>
+
+              <!-- SMTP Settings Block -->
+              <div id="smtp-settings-block" style="display: none; flex-direction: column; gap: 10px; padding: 12px; background-color: var(--surface-soft); border-radius: var(--radius-sm);">
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 8px;">
+                  <div>
+                    <label style="display: block; font-size: 11px; font-weight: 600; color: var(--ink-muted);">SMTP Host</label>
+                    <input type="text" id="cfg-smtp-host" class="search-input" style="width: 100%; font-size: 12px;" placeholder="smtp.gmail.com">
+                  </div>
+                  <div>
+                    <label style="display: block; font-size: 11px; font-weight: 600; color: var(--ink-muted);">Port</label>
+                    <input type="number" id="cfg-smtp-port" class="search-input" style="width: 100%; font-size: 12px;" value="587">
+                  </div>
+                </div>
+
+                <div>
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: var(--ink-muted);">Sender Email Address</label>
+                  <input type="email" id="cfg-smtp-user" class="search-input" style="width: 100%; font-size: 12px;" placeholder="your.name@gmail.com">
+                </div>
+
+                <div>
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: var(--ink-muted);">Password / Google App Password</label>
+                  <input type="password" id="cfg-smtp-pass" class="search-input" style="width: 100%; font-size: 12px;" placeholder="App Password (16 characters)">
+                  <span style="font-size: 10px; color: var(--ink-faint);">For Gmail: Use a Google App Password (not your account login password).</span>
+                </div>
+              </div>
+
+              <!-- Resend Settings Block -->
+              <div id="resend-settings-block" style="display: none; flex-direction: column; gap: 10px; padding: 12px; background-color: var(--surface-soft); border-radius: var(--radius-sm);">
+                <div>
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: var(--ink-muted);">Resend API Key</label>
+                  <input type="password" id="cfg-resend-key" class="search-input" style="width: 100%; font-size: 12px;" placeholder="re_123456789...">
+                </div>
+                <div>
+                  <label style="display: block; font-size: 11px; font-weight: 600; color: var(--ink-muted);">From Email</label>
+                  <input type="email" id="cfg-resend-from" class="search-input" style="width: 100%; font-size: 12px;" placeholder="onboarding@resend.dev">
+                </div>
+              </div>
+
+              <div style="display: flex; gap: 8px; margin-top: 4px;">
+                <button type="submit" class="btn btn-secondary" style="flex: 1; justify-content: center; font-size: 12px;">Save Settings</button>
+                <button type="button" class="btn btn-secondary" id="btn-test-email" style="flex: 1; justify-content: center; font-size: 12px;">🧪 Send Test</button>
+              </div>
+            </form>
           </div>
         </div>
 
@@ -328,9 +511,9 @@
               </div>
             </form>
 
-            <div id="dispatch-receipt-box" style="display: none; margin-top: 16px; padding: 14px 18px; border-radius: var(--radius-sm); background-color: var(--badge-low-bg); border: 1px solid var(--border-subtle);">
-              <p style="font-weight: 700; color: var(--badge-low-text); font-size: 14px;">✓ Counter-Proposal Delivered Successfully</p>
-              <p id="receipt-details" style="font-size: 12px; color: var(--ink-body); margin-top: 4px;"></p>
+            <!-- Honest, Transparent Dispatch Receipt -->
+            <div id="dispatch-receipt-box" style="display: none; margin-top: 16px; padding: 14px 18px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+              <!-- Dynamically populated -->
             </div>
           </div>
         </div>
@@ -338,7 +521,7 @@
       </div>
     </section>
 
-    <!-- TAB 4: Helpers Audit & Telemetry Monitor -->
+    <!-- TAB 5: Helpers Audit & Telemetry Monitor -->
     <section id="helpers-tab" class="tab-content">
       <div class="card">
         <div class="card-header">

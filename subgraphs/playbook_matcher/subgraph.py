@@ -31,6 +31,9 @@ class PlaybookMatcherSubgraph:
         self.action_generator = RedlineActionGenerator()
         self.word_modifier = WordModifier()
 
+    def reload_playbook(self, new_path: Optional[Path] = None) -> None:
+        self.comparator.reload(new_path)
+
     def match_clauses(self, clauses: List[Clause]) -> List[RedlineAction]:
         actions: List[RedlineAction] = []
         all_rules = self.comparator.rules

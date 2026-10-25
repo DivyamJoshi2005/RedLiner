@@ -14,6 +14,9 @@ class LegalRedlinerAgent:
     def __init__(self, playbook_path: Optional[Path] = None):
         self.subgraph = PlaybookMatcherSubgraph(playbook_path)
 
+    def reload_playbook(self, new_path: Optional[Path] = None) -> None:
+        self.subgraph.reload_playbook(new_path)
+
     def review_clauses(self, clauses: List[Clause]) -> List[RedlineAction]:
         return self.subgraph.match_clauses(clauses)
 

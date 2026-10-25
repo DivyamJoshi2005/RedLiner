@@ -73,7 +73,8 @@ class LawAndGovernanceChecker:
 
     @staticmethod
     def check(clause: Clause, rules: List[PlaybookRule]) -> PolicyCheckResult:
-        if clause.clause_type not in [ClauseType.GOVERNING_LAW, ClauseType.INDEMNIFICATION, ClauseType.TERMINATION, ClauseType.DATA_PRIVACY_SECURITY]:
+        # Evaluates governing law, indemnification, termination, privacy, confidentiality, and any custom playbook clauses
+        if clause.clause_type in [ClauseType.LIABILITY_CAP, ClauseType.PAYMENT_TERMS, ClauseType.IP_RIGHTS]:
             return PolicyCheckResult(False)
 
         content = f"{clause.heading}\n{clause.text}".lower()

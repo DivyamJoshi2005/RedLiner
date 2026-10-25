@@ -1,159 +1,224 @@
-name: "Enterprise Corporate Legal Playbook v2026.1"
-version: "2026.1"
-description: "Standard Fortune 500 procurement & SaaS vendor onboarding guardrails"
-author: "RedLiner General Counsel"
-
+name: Enterprise Corporate Legal Playbook v2026.1
+version: '2026.1'
+description: Standard Fortune 500 procurement & SaaS vendor onboarding guardrails
+author: RedLiner General Counsel
 rules:
-  - id: "RULE_LIAB_001"
-    name: "Standard 12-Month Liability Cap"
-    target_clause_type: "LIABILITY_CAP"
-    severity: "CRITICAL"
-    pattern_triggers:
-      - "unlimited"
-      - "uncapped"
-      - "without limitation"
-      - "exceeding the fees"
-      - "five times"
-      - "ten times"
-      - "10x"
-      - "3x"
-      - "in no event shall vendor's aggregate liability"
-    forbidden_terms:
-      - "unlimited liability"
-      - "vendor liability shall not be limited"
-      - "shall not apply to vendor"
-    required_terms:
-      - "aggregate fees paid"
-      - "preceding twelve (12) months"
-      - "consequential damages"
-    preferred_fallback_text: "Except for breaches of confidentiality, gross negligence, or indemnification obligations, neither party's aggregate liability arising out of or related to this Agreement shall exceed the total amount of fees actually paid or payable by Customer to Vendor in the twelve (12) months immediately preceding the event giving rise to liability. In no event shall either party be liable for any indirect, incidental, special, punitive, or consequential damages."
-    comment_explanation: "Playbook Guardrail Violation: Vendor terms either propose uncapped/asymmetric liability or an excessive multiplier. RedLiner policy mandates mutual liability capped strictly at 12 months' trailing fees with mutual waiver of consequential damages."
-    guidance_note: "Hard boundary. Do not accept liability multiples greater than 1x annual contract value without CFO & Legal Head explicit sign-off."
-
-  - id: "RULE_INDEM_002"
-    name: "Comprehensive Vendor IP & Data Breach Indemnification"
-    target_clause_type: "INDEMNIFICATION"
-    severity: "HIGH"
-    pattern_triggers:
-      - "customer shall indemnify"
-      - "vendor shall have no obligation to defend"
-      - "sole and exclusive remedy"
-      - "infringement claim"
-    forbidden_terms:
-      - "customer defends vendor"
-      - "as sole remedy"
-    required_terms:
-      - "vendor shall defend"
-      - "indemnify and hold harmless"
-      - "intellectual property infringement"
-    preferred_fallback_text: "Vendor shall defend, indemnify, and hold harmless Customer, its affiliates, officers, directors, and employees from and against any and all third-party claims, losses, damages, liabilities, costs, and expenses (including reasonable attorneys' fees) arising out of or relating to: (a) any allegation that the Services or Deliverables infringe or misappropriate any patent, copyright, trademark, or trade secret of any third party; (b) Vendor's breach of data privacy or confidentiality obligations; or (c) gross negligence or willful misconduct of Vendor or its personnel."
-    comment_explanation: "Playbook Guardrail Violation: Vendor indemnification must cover third-party IP infringement and data breaches without forcing sole-remedy restrictions onto Customer."
-    guidance_note: "Vendor must provide uncapped or super-capped indemnity for third-party IP infringement claims."
-
-  - id: "RULE_IP_003"
-    name: "Customer Ownership of Deliverables & Data"
-    target_clause_type: "IP_RIGHTS"
-    severity: "CRITICAL"
-    pattern_triggers:
-      - "vendor retains all right"
-      - "customer hereby assigns"
-      - "derivative works"
-      - "work product"
-      - "vendor property"
-    forbidden_terms:
-      - "vendor owns customer data"
-      - "exclusive property of vendor"
-      - "customer assigns rights in deliverables"
-    required_terms:
-      - "customer retains all rights"
-      - "work made for hire"
-      - "customer data"
-    preferred_fallback_text: "Customer retains all right, title, and interest, including all Intellectual Property Rights, in and to Customer Data and all Deliverables and custom work product created specifically for Customer under this Agreement. To the extent Deliverables incorporate any pre-existing Vendor IP, Vendor hereby grants Customer a perpetual, irrevocable, worldwide, royalty-free, non-exclusive license to use, execute, reproduce, and display such Vendor IP solely in connection with Customer's internal business use of the Deliverables."
-    comment_explanation: "Playbook Guardrail Violation: Vendor clause attempts to claim ownership over custom deliverables and customer-derived data. Customer policy strictly requires Customer ownership of all bespoke deliverables and data."
-    guidance_note: "Core IP protection requirement. Never grant vendor proprietary rights over client confidential assets."
-
-  - id: "RULE_LAW_004"
-    name: "Governing Law & Neutral Dispute Resolution"
-    target_clause_type: "GOVERNING_LAW"
-    severity: "MEDIUM"
-    pattern_triggers:
-      - "laws of the state of"
-      - "governed by and construed"
-      - "exclusive jurisdiction"
-      - "courts of"
-    forbidden_terms:
-      - "england and wales"
-      - "california state courts exclusively"
-      - "courts of vendor"
-      - "county of vendor"
-    required_terms:
-      - "delaware"
-      - "arbitration"
-    preferred_fallback_text: "This Agreement shall be governed by and construed in accordance with the laws of the State of Delaware, without regard to its conflict of law principles. Any dispute, controversy, or claim arising out of or relating to this Agreement shall be settled by binding arbitration administered by the American Arbitration Association (AAA) in accordance with its Commercial Arbitration Rules, held in Wilmington, Delaware."
-    comment_explanation: "Playbook Guardrail Violation: RedLiner policy standardizes dispute resolution under Delaware corporate law with neutral AAA binding arbitration."
-    guidance_note: "New York is also acceptable as a secondary fallback if Vendor disputes Delaware."
-
-  - id: "RULE_PAY_005"
-    name: "Net 60 Payment Terms & Fee Dispute Escrow"
-    target_clause_type: "PAYMENT_TERMS"
-    severity: "HIGH"
-    pattern_triggers:
-      - "net 15"
-      - "net 30"
-      - "due upon receipt"
-      - "advance payment"
-      - "1.5% per month"
-      - "interest at the rate of"
-    forbidden_terms:
-      - "net 15 days"
-      - "immediate payment"
-      - "due upon receipt"
-      - "late fee of 2%"
-    required_terms:
-      - "net 60"
-      - "undisputed"
-    preferred_fallback_text: "Customer shall pay all undisputed invoice amounts within sixty (60) days ('Net 60') of receipt of an accurate, itemized invoice. Customer reserves the right to withhold payment in good faith on any disputed amounts pending prompt resolution by the parties. Late payments on undisputed sums shall accrue interest at the lesser of 1.0% per annum or the maximum rate permitted by law."
-    comment_explanation: "Playbook Guardrail Violation: Vendor requests accelerated payment terms (Net 15/30) or punitive late interest rates. Enterprise procurement standard is Net 60 with protection for good-faith disputed amounts."
-    guidance_note: "Net 45 can be conceded only if vendor offers a 2% prompt-payment discount."
-
-  - id: "RULE_TERM_006"
-    name: "Termination for Convenience Without Penalty"
-    target_clause_type: "TERMINATION"
-    severity: "HIGH"
-    pattern_triggers:
-      - "non-cancelable"
-      - "early termination fee"
-      - "no termination for convenience"
-      - "lock-in"
-      - "liquidated damages"
-    forbidden_terms:
-      - "non-cancellable"
-      - "early termination fee"
-      - "for cause only"
-    required_terms:
-      - "thirty (30) days"
-      - "without penalty"
-      - "for convenience"
-    preferred_fallback_text: "Customer may terminate this Agreement or any applicable Order Form for convenience, in whole or in part, at any time upon thirty (30) days' prior written notice to Vendor, without liability, penalty, or early termination fees. In the event of such termination, Customer shall be obligated only to pay for Services satisfactorily delivered and accepted prior to the effective date of termination, and Vendor shall refund any prepaid unearned fees on a pro-rata basis."
-    comment_explanation: "Playbook Guardrail Violation: Vendor attempts to lock in contracts with no-termination-for-convenience or punitive break-up fees. Enterprise standard requires 30-day convenience termination and pro-rata prepaid fee refunds."
-    guidance_note: "Critical for risk management to avoid vendor lock-in."
-
-  - id: "RULE_PRIV_007"
-    name: "Enterprise Data Security & 48-Hour Incident Notification"
-    target_clause_type: "DATA_PRIVACY_SECURITY"
-    severity: "HIGH"
-    pattern_triggers:
-      - "security incident"
-      - "data protection"
-      - "personal data"
-      - "security breach"
-    forbidden_terms:
-      - "reasonable efforts only"
-      - "within thirty days of confirmation"
-    required_terms:
-      - "soc 2"
-      - "forty-eight (48) hours"
-      - "encrypt"
-    preferred_fallback_text: "Vendor represents and warrants that it maintains administrative, technical, and physical safeguards conforming to SOC 2 Type II and ISO 27001 standards to protect Customer Data against unauthorized access, destruction, or disclosure. In the event of any confirmed or reasonably suspected security incident or personal data breach, Vendor shall notify Customer in writing within forty-eight (48) hours of discovery and cooperate fully in forensic mitigation at Vendor's sole expense."
-    comment_explanation: "Playbook Guardrail Violation: Strict compliance with regulatory standards (GDPR, CCPA, SEC cyber disclosures) requires explicit SOC 2 Type II commitments and rapid 48-hour breach notification."
-    guidance_note: "Non-negotiable security requirement."
+- id: RULE_LIAB_001
+  name: Standard 12-Month Liability Cap
+  target_clause_type: LIABILITY_CAP
+  severity: CRITICAL
+  pattern_triggers:
+  - unlimited
+  - uncapped
+  - without limitation
+  - exceeding the fees
+  - five times
+  - ten times
+  - 10x
+  - 3x
+  - in no event shall vendor's aggregate liability
+  forbidden_terms:
+  - unlimited liability
+  - vendor liability shall not be limited
+  - shall not apply to vendor
+  required_terms:
+  - aggregate fees paid
+  - preceding twelve (12) months
+  - consequential damages
+  preferred_fallback_text: Except for breaches of confidentiality, gross negligence,
+    or indemnification obligations, neither party's aggregate liability arising out
+    of or related to this Agreement shall exceed the total amount of fees actually
+    paid or payable by Customer to Vendor in the twelve (12) months immediately preceding
+    the event giving rise to liability. In no event shall either party be liable for
+    any indirect, incidental, special, punitive, or consequential damages.
+  comment_explanation: 'Playbook Guardrail Violation: Vendor terms either propose
+    uncapped/asymmetric liability or an excessive multiplier. RedLiner policy mandates
+    mutual liability capped strictly at 12 months'' trailing fees with mutual waiver
+    of consequential damages.'
+  guidance_note: Hard boundary. Do not accept liability multiples greater than 1x
+    annual contract value without CFO & Legal Head explicit sign-off.
+- id: RULE_INDEM_002
+  name: Comprehensive Vendor IP & Data Breach Indemnification
+  target_clause_type: INDEMNIFICATION
+  severity: HIGH
+  pattern_triggers:
+  - customer shall indemnify
+  - vendor shall have no obligation to defend
+  - sole and exclusive remedy
+  - infringement claim
+  forbidden_terms:
+  - customer defends vendor
+  - as sole remedy
+  required_terms:
+  - vendor shall defend
+  - indemnify and hold harmless
+  - intellectual property infringement
+  preferred_fallback_text: 'Vendor shall defend, indemnify, and hold harmless Customer,
+    its affiliates, officers, directors, and employees from and against any and all
+    third-party claims, losses, damages, liabilities, costs, and expenses (including
+    reasonable attorneys'' fees) arising out of or relating to: (a) any allegation
+    that the Services or Deliverables infringe or misappropriate any patent, copyright,
+    trademark, or trade secret of any third party; (b) Vendor''s breach of data privacy
+    or confidentiality obligations; or (c) gross negligence or willful misconduct
+    of Vendor or its personnel.'
+  comment_explanation: 'Playbook Guardrail Violation: Vendor indemnification must
+    cover third-party IP infringement and data breaches without forcing sole-remedy
+    restrictions onto Customer.'
+  guidance_note: Vendor must provide uncapped or super-capped indemnity for third-party
+    IP infringement claims.
+- id: RULE_IP_003
+  name: Customer Ownership of Deliverables & Data
+  target_clause_type: IP_RIGHTS
+  severity: CRITICAL
+  pattern_triggers:
+  - vendor retains all right
+  - customer hereby assigns
+  - derivative works
+  - work product
+  - vendor property
+  forbidden_terms:
+  - vendor owns customer data
+  - exclusive property of vendor
+  - customer assigns rights in deliverables
+  required_terms:
+  - customer retains all rights
+  - work made for hire
+  - customer data
+  preferred_fallback_text: Customer retains all right, title, and interest, including
+    all Intellectual Property Rights, in and to Customer Data and all Deliverables
+    and custom work product created specifically for Customer under this Agreement.
+    To the extent Deliverables incorporate any pre-existing Vendor IP, Vendor hereby
+    grants Customer a perpetual, irrevocable, worldwide, royalty-free, non-exclusive
+    license to use, execute, reproduce, and display such Vendor IP solely in connection
+    with Customer's internal business use of the Deliverables.
+  comment_explanation: 'Playbook Guardrail Violation: Vendor clause attempts to claim
+    ownership over custom deliverables and customer-derived data. Customer policy
+    strictly requires Customer ownership of all bespoke deliverables and data.'
+  guidance_note: Core IP protection requirement. Never grant vendor proprietary rights
+    over client confidential assets.
+- id: RULE_LAW_004
+  name: Governing Law & Neutral Dispute Resolution
+  target_clause_type: GOVERNING_LAW
+  severity: MEDIUM
+  pattern_triggers:
+  - laws of the state of
+  - governed by and construed
+  - exclusive jurisdiction
+  - courts of
+  forbidden_terms:
+  - england and wales
+  - california state courts exclusively
+  - courts of vendor
+  - county of vendor
+  required_terms:
+  - delaware
+  - arbitration
+  preferred_fallback_text: This Agreement shall be governed by and construed in accordance
+    with the laws of the State of Delaware, without regard to its conflict of law
+    principles. Any dispute, controversy, or claim arising out of or relating to this
+    Agreement shall be settled by binding arbitration administered by the American
+    Arbitration Association (AAA) in accordance with its Commercial Arbitration Rules,
+    held in Wilmington, Delaware.
+  comment_explanation: 'Playbook Guardrail Violation: RedLiner policy standardizes
+    dispute resolution under Delaware corporate law with neutral AAA binding arbitration.'
+  guidance_note: New York is also acceptable as a secondary fallback if Vendor disputes
+    Delaware.
+- id: RULE_PAY_005
+  name: Net 60 Payment Terms & Fee Dispute Escrow
+  target_clause_type: PAYMENT_TERMS
+  severity: HIGH
+  pattern_triggers:
+  - net 15
+  - net 30
+  - due upon receipt
+  - advance payment
+  - 1.5% per month
+  - interest at the rate of
+  forbidden_terms:
+  - net 15 days
+  - immediate payment
+  - due upon receipt
+  - late fee of 2%
+  required_terms:
+  - net 60
+  - undisputed
+  preferred_fallback_text: Customer shall pay all undisputed invoice amounts within
+    sixty (60) days ('Net 60') of receipt of an accurate, itemized invoice. Customer
+    reserves the right to withhold payment in good faith on any disputed amounts pending
+    prompt resolution by the parties. Late payments on undisputed sums shall accrue
+    interest at the lesser of 1.0% per annum or the maximum rate permitted by law.
+  comment_explanation: 'Playbook Guardrail Violation: Vendor requests accelerated
+    payment terms (Net 15/30) or punitive late interest rates. Enterprise procurement
+    standard is Net 60 with protection for good-faith disputed amounts.'
+  guidance_note: Net 45 can be conceded only if vendor offers a 2% prompt-payment
+    discount.
+- id: RULE_TERM_006
+  name: Termination for Convenience Without Penalty
+  target_clause_type: TERMINATION
+  severity: HIGH
+  pattern_triggers:
+  - non-cancelable
+  - early termination fee
+  - no termination for convenience
+  - lock-in
+  - liquidated damages
+  forbidden_terms:
+  - non-cancellable
+  - early termination fee
+  - for cause only
+  required_terms:
+  - thirty (30) days
+  - without penalty
+  - for convenience
+  preferred_fallback_text: Customer may terminate this Agreement or any applicable
+    Order Form for convenience, in whole or in part, at any time upon thirty (30)
+    days' prior written notice to Vendor, without liability, penalty, or early termination
+    fees. In the event of such termination, Customer shall be obligated only to pay
+    for Services satisfactorily delivered and accepted prior to the effective date
+    of termination, and Vendor shall refund any prepaid unearned fees on a pro-rata
+    basis.
+  comment_explanation: 'Playbook Guardrail Violation: Vendor attempts to lock in contracts
+    with no-termination-for-convenience or punitive break-up fees. Enterprise standard
+    requires 30-day convenience termination and pro-rata prepaid fee refunds.'
+  guidance_note: Critical for risk management to avoid vendor lock-in.
+- id: RULE_PRIV_007
+  name: Enterprise Data Security & 48-Hour Incident Notification
+  target_clause_type: DATA_PRIVACY_SECURITY
+  severity: HIGH
+  pattern_triggers:
+  - security incident
+  - data protection
+  - personal data
+  - security breach
+  forbidden_terms:
+  - reasonable efforts only
+  - within thirty days of confirmation
+  required_terms:
+  - soc 2
+  - forty-eight (48) hours
+  - encrypt
+  preferred_fallback_text: Vendor represents and warrants that it maintains administrative,
+    technical, and physical safeguards conforming to SOC 2 Type II and ISO 27001 standards
+    to protect Customer Data against unauthorized access, destruction, or disclosure.
+    In the event of any confirmed or reasonably suspected security incident or personal
+    data breach, Vendor shall notify Customer in writing within forty-eight (48) hours
+    of discovery and cooperate fully in forensic mitigation at Vendor's sole expense.
+  comment_explanation: 'Playbook Guardrail Violation: Strict compliance with regulatory
+    standards (GDPR, CCPA, SEC cyber disclosures) requires explicit SOC 2 Type II
+    commitments and rapid 48-hour breach notification.'
+  guidance_note: Non-negotiable security requirement.
+- id: RULE_CONF_999
+  name: Strict Mutual Confidentiality 5-Year
+  target_clause_type: CONFIDENTIALITY
+  severity: HIGH
+  pattern_triggers:
+  - one year
+  - 12 months
+  forbidden_terms:
+  - 1 year confidentiality
+  required_terms:
+  - five (5) years
+  preferred_fallback_text: Confidentiality obligations shall survive for a period
+    of five (5) years.
+  comment_explanation: RedLiner policy requires 5-year confidentiality.
+  guidance_note: Core information security policy.

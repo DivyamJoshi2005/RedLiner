@@ -3,16 +3,19 @@
 let currentParsedDoc = null;
 let currentRedlineResult = null;
 let currentFilename = "vendor_saas_agreement.docx";
+let allVendors = [];
 
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initParserAndRedliner();
+  initPlaybookManager();
   initVendorRadar();
   initEmailDispatcher();
   initHelpersAudit();
 
-  // Load standard sample by default on boot
+  // Load defaults on boot
   loadSampleContract("vendor_saas_agreement.docx");
+  loadPlaybook();
   loadVendors();
   loadLogs();
 });
@@ -20,6 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // Toast notification helper
 function showToast(message, duration = 3500) {
   const container = document.getElementById("toast-container");
+  if (!container) return;
   const toast = document.createElement("div");
   toast.className = "toast";
   toast.innerText = message;
@@ -27,6 +31,13 @@ function showToast(message, duration = 3500) {
   setTimeout(() => {
     toast.remove();
   }, duration);
+}
+
+function escapeHtml(text) {
+  if (!text) return "";
+  const div = document.createElement("div");
+  div.innerText = text;
+  return div.innerHTML;
 }
 
 // ---------------- Tabs Navigation ----------------
@@ -42,6 +53,7 @@ function initTabs() {
       const targetContent = document.getElementById(targetId);
       if (targetContent) targetContent.classList.add("active");
 
+      if (targetId === "playbook-tab") loadPlaybook();
       if (targetId === "vendor-tab") loadVendors();
       if (targetId === "helpers-tab") loadLogs();
     });
@@ -110,8 +122,8 @@ function renderParsedDocument(parsedDoc) {
   const btnRunRedline = document.getElementById("btn-run-redline");
 
   metaContainer.innerHTML = `
-    <p><strong>File:</strong> ${parsedDoc.filename}</p>
-    <p><strong>Format:</strong> ${parsedDoc.file_type.toUpperCase()}</p>
+    <p><strong>File:</strong> ${escapeHtml(parsedDoc.filename)}</p>
+    <p><strong>Format:</strong> ${escapeHtml(parsedDoc.file_type.toUpperCase())}</p>
     <p><strong>Paragraphs:</strong> ${parsedDoc.total_paragraphs}</p>
     <p><strong>Clauses Detected:</strong> ${parsedDoc.clauses.length}</p>
   `;
@@ -120,7 +132,7 @@ function renderParsedDocument(parsedDoc) {
   for (const [cType, count] of Object.entries(parsedDoc.clause_distribution)) {
     const chip = document.createElement("span");
     chip.className = "clause-chip";
-    chip.innerHTML = `<span>${cType}</span><strong>${count}</strong>`;
+    chip.innerHTML = `<span>${escapeHtml(cType)}</span><strong>${count}</strong>`;
     chipsContainer.appendChild(chip);
   }
 
@@ -150,12 +162,10 @@ async function runRedline() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ filename: currentFilename })
     });
-
     if (!res.ok) throw new Error("Redline execution failed");
     const result = await res.json();
-    currentRedlineResult = result;
     renderRedlineResult(result);
-    showToast(`Redline complete: ${result.violations_detected} guardrail violations detected!`);
+    showToast(`Generated ${result.violations_detected} tracked changes with Word comments!`);
     loadLogs();
   } catch (err) {
     showToast(`Redline error: ${err.message}`);
@@ -166,31 +176,31 @@ async function runRedline() {
 }
 
 function renderRedlineResult(result) {
+  currentRedlineResult = result;
   const container = document.getElementById("diff-cards-container");
   const summaryBanner = document.getElementById("redline-summary-banner");
   const actionButtons = document.getElementById("redline-action-buttons");
+  const badge = document.getElementById("violations-count-badge");
   const downloadBtn = document.getElementById("download-docx-btn");
-  const violationsBadge = document.getElementById("violations-count-badge");
 
-  violationsBadge.innerText = `${result.violations_detected} edits`;
+  badge.innerText = `${result.violations_detected} edits`;
+  downloadBtn.href = `/api/redliner/download/${result.output_docx_filename}`;
+  actionButtons.style.display = "flex";
 
   // Summary Banner
   summaryBanner.style.display = "block";
-  document.getElementById("summary-banner-title").innerText = `${result.violations_detected} Playbook Violations Tracked in Word OpenXML`;
-  document.getElementById("summary-banner-desc").innerText = result.summary;
+  document.getElementById("summary-banner-title").innerText = 
+    `Generated ${result.violations_detected} Native Word Tracked Changes`;
+  document.getElementById("summary-banner-desc").innerText = 
+    `Output: ${result.output_docx_filename} — Verified against Corporate Legal Playbook.`;
 
-  const bannerBadges = document.getElementById("summary-banner-badges");
-  bannerBadges.innerHTML = `
-    <span class="badge badge-critical">${result.critical_count} Critical</span>
-    <span class="badge badge-high">${result.violations_detected - result.critical_count} High/Med</span>
+  const badgesContainer = document.getElementById("summary-banner-badges");
+  badgesContainer.innerHTML = `
+    <span class="badge badge-critical">${result.critical_count} CRITICAL</span>
+    <span class="badge badge-high">${result.violations_detected - result.critical_count} HIGH/MEDIUM</span>
   `;
 
-  // Download button
-  actionButtons.style.display = "flex";
-  downloadBtn.href = `/api/redliner/download/${result.output_docx_filename}`;
-  downloadBtn.setAttribute("download", result.output_docx_filename);
-
-  // Render diff cards
+  // Render Diff Cards
   container.innerHTML = "";
   result.actions.forEach(act => {
     const card = document.createElement("div");
@@ -202,7 +212,7 @@ function renderRedlineResult(result) {
 
     card.innerHTML = `
       <div class="diff-card-header">
-        <div class="diff-clause-title">${act.clause_type}: ${act.rule_name}</div>
+        <div class="diff-clause-title">${escapeHtml(act.clause_type)}: ${escapeHtml(act.rule_name)}</div>
         <span class="badge ${badgeClass}">${act.severity}</span>
       </div>
       <div class="diff-body">
@@ -224,7 +234,7 @@ function renderRedlineResult(result) {
           Native Word Margin Comment (&lt;w:comment&gt;)
         </div>
         <div class="diff-comment-box">
-          ${escapeHtml(act.comment).replace(/\\n/g, "<br>")}
+          ${escapeHtml(act.comment).replace(/\n/g, "<br>")}
         </div>
       </div>
     `;
@@ -232,20 +242,184 @@ function renderRedlineResult(result) {
     container.appendChild(card);
   });
 
-  // Also update email tab preview defaults
   updateEmailPreview(result);
 }
 
-function escapeHtml(text) {
-  if (!text) return "";
-  const div = document.createElement("div");
-  div.innerText = text;
-  return div.innerHTML;
+// ---------------- 2. Corporate Legal Playbook Management ----------------
+function initPlaybookManager() {
+  const btnUpload = document.getElementById("btn-upload-playbook");
+  const fileInput = document.getElementById("playbook-file-input");
+  const btnToggleAdd = document.getElementById("btn-toggle-add-rule");
+  const btnCancelAdd = document.getElementById("btn-cancel-add-rule");
+  const addPanel = document.getElementById("add-rule-panel");
+  const addForm = document.getElementById("add-rule-form");
+  const btnReset = document.getElementById("btn-reset-playbook");
+
+  btnUpload.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", async (e) => {
+    if (e.target.files.length > 0) {
+      const file = e.target.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await fetch("/api/playbook/upload", { method: "POST", body: formData });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Failed to upload playbook");
+        }
+        const data = await res.json();
+        showToast(data.message || "Playbook uploaded successfully!");
+        loadPlaybook();
+      } catch (err) {
+        showToast(`Playbook error: ${err.message}`);
+      }
+    }
+  });
+
+  btnToggleAdd.addEventListener("click", () => {
+    addPanel.style.display = (addPanel.style.display === "none") ? "block" : "none";
+  });
+
+  btnCancelAdd.addEventListener("click", () => {
+    addPanel.style.display = "none";
+  });
+
+  addForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const ruleId = document.getElementById("rule-id-input").value.trim();
+    const ruleName = document.getElementById("rule-name-input").value.trim();
+    const clauseType = document.getElementById("rule-clause-type-select").value;
+    const severity = document.getElementById("rule-severity-select").value;
+    const triggersRaw = document.getElementById("rule-triggers-input").value;
+    const forbiddenRaw = document.getElementById("rule-forbidden-input").value;
+    const fallbackText = document.getElementById("rule-fallback-input").value.trim();
+    const comment = document.getElementById("rule-comment-input").value.trim();
+
+    const patternTriggers = triggersRaw ? triggersRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+    const forbiddenTerms = forbiddenRaw ? forbiddenRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+
+    const payload = {
+      id: ruleId,
+      name: ruleName,
+      target_clause_type: clauseType,
+      severity: severity,
+      pattern_triggers: patternTriggers,
+      forbidden_terms: forbiddenTerms,
+      required_terms: [],
+      preferred_fallback_text: fallbackText,
+      comment_explanation: comment,
+      guidance_note: "Custom policy rule activated via RedLiner Legal Workbench."
+    };
+
+    try {
+      const res = await fetch("/api/playbook/rule", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "Failed to save rule");
+      }
+      const data = await res.json();
+      showToast(data.message || `Rule '${ruleName}' saved and activated!`);
+      addPanel.style.display = "none";
+      addForm.reset();
+      loadPlaybook();
+    } catch (err) {
+      showToast(`Rule error: ${err.message}`);
+    }
+  });
+
+  btnReset.addEventListener("click", async () => {
+    if (!confirm("Are you sure you want to reset the corporate playbook to standard Enterprise baseline rules?")) return;
+    try {
+      const res = await fetch("/api/playbook/reset", { method: "POST" });
+      if (!res.ok) throw new Error("Reset failed");
+      const data = await res.json();
+      showToast(data.message || "Playbook reset to default!");
+      loadPlaybook();
+    } catch (err) {
+      showToast(`Reset error: ${err.message}`);
+    }
+  });
 }
 
-// ---------------- 2. Vendor Intelligence Radar ----------------
-let allVendors = [];
+async function loadPlaybook() {
+  try {
+    const res = await fetch("/api/playbook");
+    if (!res.ok) throw new Error("Failed to load playbook");
+    const pb = await res.json();
 
+    document.getElementById("pb-title").innerText = pb.name || "Corporate Legal Playbook";
+    document.getElementById("pb-desc").innerText = pb.description || "";
+    document.getElementById("pb-version").innerText = pb.version || "2026.1";
+    document.getElementById("pb-author").innerText = pb.author || "RedLiner Counsel";
+    document.getElementById("playbook-rules-badge").innerText = `${pb.total_rules || pb.rules.length} rules`;
+    document.getElementById("header-playbook-name").innerHTML = `Playbook: <strong>${escapeHtml(pb.name)}</strong>`;
+
+    renderPlaybookRules(pb.rules || []);
+  } catch (err) {
+    console.error("Error loading playbook:", err);
+  }
+}
+
+function renderPlaybookRules(rules) {
+  const container = document.getElementById("playbook-rules-list");
+  container.innerHTML = "";
+
+  if (rules.length === 0) {
+    container.innerHTML = `<p style="text-align: center; color: var(--ink-muted); padding: 30px;">No policy rules defined.</p>`;
+    return;
+  }
+
+  rules.forEach(rule => {
+    const card = document.createElement("div");
+    card.className = "playbook-rule-card";
+
+    let sevBadge = "badge-medium";
+    if (rule.severity === "CRITICAL") sevBadge = "badge-critical";
+    if (rule.severity === "HIGH") sevBadge = "badge-high";
+
+    const triggerChips = (rule.pattern_triggers || []).map(t => `<span class="rule-chip">${escapeHtml(t)}</span>`).join("");
+    const forbiddenChips = (rule.forbidden_terms || []).map(f => `<span class="rule-chip forbidden">✕ ${escapeHtml(f)}</span>`).join("");
+    const requiredChips = (rule.required_terms || []).map(r => `<span class="rule-chip required">✓ ${escapeHtml(r)}</span>`).join("");
+
+    card.innerHTML = `
+      <div class="playbook-rule-header">
+        <div>
+          <span style="font-family: monospace; font-size: 11px; color: var(--brand-orange); font-weight: 700; margin-right: 8px;">${escapeHtml(rule.id)}</span>
+          <strong style="font-size: 14px; color: var(--ink-primary);">${escapeHtml(rule.name)}</strong>
+          <span style="font-size: 11px; color: var(--ink-muted); margin-left: 8px;">Target: <code>${escapeHtml(rule.target_clause_type)}</code></span>
+        </div>
+        <span class="badge ${sevBadge}">${escapeHtml(rule.severity)}</span>
+      </div>
+
+      <div style="margin: 8px 0;">
+        <div style="font-size: 11px; font-weight: 600; color: var(--ink-muted); margin-bottom: 4px;">Trigger & Policy Patterns:</div>
+        <div>${triggerChips || '<span style="font-size: 11px; color: var(--ink-faint);">None</span>'}</div>
+        ${forbiddenChips ? `<div style="margin-top: 4px;">${forbiddenChips}</div>` : ""}
+        ${requiredChips ? `<div style="margin-top: 4px;">${requiredChips}</div>` : ""}
+      </div>
+
+      <div style="margin-top: 10px;">
+        <div style="font-size: 11px; font-weight: 600; color: var(--ink-muted);">Preferred Fallback Language (&lt;w:ins&gt;):</div>
+        <div class="fallback-quote-box">${escapeHtml(rule.preferred_fallback_text)}</div>
+      </div>
+
+      <div style="margin-top: 6px;">
+        <div style="font-size: 11px; font-weight: 600; color: var(--ink-muted);">Review Comment Explanation (&lt;w:comment&gt;):</div>
+        <div class="comment-bubble-box">💬 ${escapeHtml(rule.comment_explanation)}</div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+// ---------------- 3. Vendor Intelligence Radar ----------------
 function initVendorRadar() {
   const searchInput = document.getElementById("vendor-search-input");
   const btnAll = document.getElementById("btn-filter-all");
@@ -253,29 +427,32 @@ function initVendorRadar() {
   const btnFlagged = document.getElementById("btn-filter-flagged");
   const btnAssess = document.getElementById("btn-assess-new-vendor");
 
-  searchInput.addEventListener("input", (e) => {
-    filterVendors(e.target.value);
-  });
+  searchInput.addEventListener("input", (e) => filterVendors(e.target.value));
 
   btnAll.addEventListener("click", () => renderVendors(allVendors));
-  btnLow.addEventListener("click", () => {
-    renderVendors(allVendors.filter(v => v.risk_tier === "LOW"));
-  });
-  btnFlagged.addEventListener("click", () => {
-    renderVendors(allVendors.filter(v => v.sanction_pep_status !== "CLEARED" || v.risk_score >= 50));
-  });
+  btnLow.addEventListener("click", () => renderVendors(allVendors.filter(v => v.risk_tier === "LOW")));
+  btnFlagged.addEventListener("click", () => renderVendors(allVendors.filter(v => v.sanction_pep_status !== "CLEARED" || v.risk_score >= 50)));
 
   btnAssess.addEventListener("click", promptNewVendorAssessment);
 }
 
 async function loadVendors() {
   try {
-    const res = await fetch("/api/vendor/search?limit=60");
-    if (!res.ok) throw new Error("Failed to load vendors");
-    allVendors = await res.json();
-    renderVendors(allVendors);
-    document.getElementById("vendor-count-badge").innerText = `${allVendors.length} vendors`;
-    document.getElementById("kpi-vendors-count").innerText = allVendors.length;
+    const [resVendors, resStats] = await Promise.all([
+      fetch("/api/vendor/search?limit=100"),
+      fetch("/api/vendor/stats")
+    ]);
+
+    if (resVendors.ok) {
+      allVendors = await resVendors.json();
+      renderVendors(allVendors);
+    }
+
+    if (resStats.ok) {
+      const stats = await resStats.json();
+      document.getElementById("vendor-count-badge").innerText = `${stats.total_vendors} vendors`;
+      document.getElementById("kpi-vendors-count").innerText = stats.total_vendors;
+    }
   } catch (err) {
     console.error("Error loading vendors:", err);
   }
@@ -299,7 +476,7 @@ function renderVendors(vendors) {
   if (vendors.length === 0) {
     container.innerHTML = `
       <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--ink-muted);">
-        No matching vendor records found.
+        No matching vendor records found. Use "+ Quick OSINT Check" to screen any company.
       </div>
     `;
     return;
@@ -318,7 +495,7 @@ function renderVendors(vendors) {
     if (v.sanction_pep_status === "BLOCKED") sanctionBadgeClass = "badge-critical";
     if (v.sanction_pep_status === "FLAGGED") sanctionBadgeClass = "badge-high";
 
-    const certTags = v.compliance_certifications.map(c => `<span class="cert-tag">${c}</span>`).join(" ");
+    const certTags = (v.compliance_certifications || []).map(c => `<span class="cert-tag">${escapeHtml(c)}</span>`).join(" ");
 
     card.innerHTML = `
       <div class="vendor-header">
@@ -326,13 +503,13 @@ function renderVendors(vendors) {
           <div class="vendor-name">${escapeHtml(v.company_name)}</div>
           <div class="vendor-domain">${escapeHtml(v.domain)} • ${escapeHtml(v.country)}</div>
         </div>
-        <span class="badge ${tierBadgeClass}">${v.risk_tier} RISK (${v.risk_score})</span>
+        <span class="badge ${tierBadgeClass}">${v.risk_tier} RISK (${v.risk_score.toFixed(1)})</span>
       </div>
 
       <div class="vendor-meta-grid">
         <div class="vendor-meta-item">
           <span>Credit Score</span>
-          <span>${v.credit_score}/100 (${v.financial_rating})</span>
+          <span>${v.credit_score}/100 (${escapeHtml(v.financial_rating)})</span>
         </div>
         <div class="vendor-meta-item">
           <span>Sanctions Status</span>
@@ -364,14 +541,14 @@ function renderVendors(vendors) {
 }
 
 async function promptNewVendorAssessment() {
-  const name = prompt("Enter Vendor Name or Domain to screen (e.g., 'CloudScale Systems' or 'cloudscale.io'):");
+  const name = prompt("Enter any Vendor Name or Domain to screen (e.g. 'Google', 'Amazon', 'India Tech Partners', or 'Divyam Systems'):");
   if (!name || !name.trim()) return;
 
   try {
     const res = await fetch(`/api/vendor/assess?name=${encodeURIComponent(name.trim())}`);
     if (!res.ok) throw new Error("Assessment failed");
     const profile = await res.json();
-    showToast(`Screened ${profile.company_name}: Risk Tier = ${profile.risk_tier} (${profile.risk_score})`);
+    showToast(`Screened and permanently saved: ${profile.company_name} (Risk: ${profile.risk_tier}, Score: ${profile.risk_score.toFixed(1)})`);
     loadVendors();
     loadLogs();
   } catch (err) {
@@ -379,22 +556,93 @@ async function promptNewVendorAssessment() {
   }
 }
 
-// ---------------- 3. Cloudflare Email Dispatcher ----------------
+// ---------------- 4. Cloudflare Email Dispatcher & Delivery Settings ----------------
 function initEmailDispatcher() {
   const inboundForm = document.getElementById("inbound-webhook-form");
   const outboundForm = document.getElementById("outbound-dispatch-form");
   const btnRefreshPreview = document.getElementById("btn-refresh-email-preview");
   const btnViewWorkbench = document.getElementById("btn-view-redlines-workbench");
 
+  const emailConfigForm = document.getElementById("email-config-form");
+  const providerSelect = document.getElementById("cfg-provider-select");
+  const smtpBlock = document.getElementById("smtp-settings-block");
+  const resendBlock = document.getElementById("resend-settings-block");
+  const btnTestEmail = document.getElementById("btn-test-email");
+
+  // Load email configuration from server
+  loadEmailConfig();
+
+  providerSelect.addEventListener("change", () => {
+    const val = providerSelect.value;
+    smtpBlock.style.display = (val === "smtp") ? "flex" : "none";
+    resendBlock.style.display = (val === "resend") ? "flex" : "none";
+  });
+
+  emailConfigForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const payload = {
+      provider: providerSelect.value,
+      smtp_host: document.getElementById("cfg-smtp-host").value.trim(),
+      smtp_port: parseInt(document.getElementById("cfg-smtp-port").value, 10) || 587,
+      smtp_user: document.getElementById("cfg-smtp-user").value.trim(),
+      smtp_password: document.getElementById("cfg-smtp-pass").value,
+      smtp_use_tls: true,
+      resend_api_key: document.getElementById("cfg-resend-key").value.trim(),
+      from_email: document.getElementById("cfg-resend-from").value.trim() || document.getElementById("cfg-smtp-user").value.trim()
+    };
+
+    try {
+      const res = await fetch("/api/email/config", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      if (!res.ok) throw new Error("Failed to save email settings");
+      showToast("Email delivery settings saved successfully!");
+      loadEmailConfig();
+    } catch (err) {
+      showToast(`Config error: ${err.message}`);
+    }
+  });
+
+  btnTestEmail.addEventListener("click", async () => {
+    const target = prompt("Enter recipient email address to send a test message:", "divyam.joshhi3124@gmail.com");
+    if (!target || !target.trim()) return;
+
+    btnTestEmail.disabled = true;
+    btnTestEmail.innerText = "Sending test...";
+
+    try {
+      const res = await fetch("/api/email/send-test", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target_email: target.trim() })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || "Test email failed");
+
+      if (data.result && data.result.is_real_delivery) {
+        alert(`✓ Real Test Email Sent Successfully!\n\nDelivered via: ${data.result.provider}\nRecipient: ${target}\nCheck your inbox/spam folder.`);
+      } else {
+        alert(`ℹ️ Sandbox Mode Notice:\n\nEmail dispatcher is currently in Simulated Sandbox Mode.\nTo deliver a real email to ${target}, select "Direct SMTP" or "Resend API" and enter your credentials.`);
+      }
+    } catch (err) {
+      alert(`⚠️ Test Email Error:\n\n${err.message}`);
+    } finally {
+      btnTestEmail.disabled = false;
+      btnTestEmail.innerText = "🧪 Send Test";
+    }
+  });
+
   if (btnViewWorkbench) {
     btnViewWorkbench.addEventListener("click", () => {
-      // Switch to Tab 1
       const tab1Btn = document.querySelector('.nav-tab[data-tab="redliner-tab"]');
       if (tab1Btn) tab1Btn.click();
       runRedline();
     });
   }
 
+  // Inbound webhook simulator
   inboundForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const fromEmail = document.getElementById("inbound-from").value;
@@ -424,7 +672,6 @@ function initEmailDispatcher() {
       if (!res.ok) throw new Error("Webhook trigger failed");
       const data = await res.json();
       
-      // Update Pipeline Stepper UI
       const stepper = document.getElementById("webhook-pipeline-status");
       if (stepper) {
         stepper.style.display = "block";
@@ -441,6 +688,7 @@ function initEmailDispatcher() {
       }
 
       showToast(`Autonomous pipeline complete: ${data.violations_detected || 7} redlines tracked in Word!`);
+      loadVendors();
       loadLogs();
     } catch (err) {
       showToast(`Webhook error: ${err.message}`);
@@ -454,6 +702,7 @@ function initEmailDispatcher() {
     if (currentRedlineResult) updateEmailPreview(currentRedlineResult);
   });
 
+  // Outbound dispatch form
   outboundForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const vendorName = document.getElementById("outbound-vendor-name").value;
@@ -469,7 +718,7 @@ function initEmailDispatcher() {
 
     const btn = document.getElementById("btn-send-counter-email");
     btn.disabled = true;
-    btn.innerText = "Dispatching via Cloudflare...";
+    btn.innerText = "Dispatching Outbound Email...";
 
     try {
       const res = await fetch("/api/email/dispatch-counter-proposal", {
@@ -479,12 +728,36 @@ function initEmailDispatcher() {
       });
       if (!res.ok) throw new Error("Dispatch failed");
       const data = await res.json();
+      const receipt = data.dispatch_receipt || {};
+      const isReal = receipt.is_real_delivery === true;
 
-      document.getElementById("dispatch-receipt-box").style.display = "block";
-      document.getElementById("receipt-details").innerText = 
-        `Delivered to ${data.email_details.recipient_email} with native tracked changes attachment (${data.email_details.redlined_docx_filename}). Deal Reference: ${data.email_details.deal_reference}`;
+      const receiptBox = document.getElementById("dispatch-receipt-box");
+      receiptBox.style.display = "block";
 
-      showToast("Counter-proposal email dispatched with tracked changes .docx!");
+      if (isReal) {
+        receiptBox.className = "alert alert-success";
+        receiptBox.innerHTML = `
+          <p style="font-weight: 700; color: var(--badge-low-text); font-size: 14px;">✓ Real Email Delivered Successfully via ${escapeHtml(receipt.provider || "Direct SMTP")}</p>
+          <p style="font-size: 12px; color: var(--ink-body); margin-top: 4px;">
+            Delivered directly to <strong>${escapeHtml(data.email_details.recipient_email)}</strong> with attached Word contract (<code>${escapeHtml(data.email_details.redlined_docx_filename)}</code>).
+          </p>
+          <p style="font-size: 11px; color: var(--ink-muted); margin-top: 2px;">Deal Reference: ${escapeHtml(data.email_details.deal_reference)}</p>
+        `;
+        showToast("Real email dispatched with tracked changes .docx!");
+      } else {
+        receiptBox.className = "alert alert-warning";
+        receiptBox.innerHTML = `
+          <p style="font-weight: 700; color: var(--badge-high-text); font-size: 14px;">⚠️ Simulated Sandbox Dispatch (Local Mode)</p>
+          <p style="font-size: 12px; color: var(--ink-body); margin-top: 4px;">
+            Counter-proposal generated and logged for <strong>${escapeHtml(data.email_details.recipient_email)}</strong>. Word tracked changes document attached.
+          </p>
+          <p style="font-size: 11px; color: var(--ink-muted); margin-top: 4px; line-height: 1.4;">
+            ℹ️ <strong>Why didn't this land in your inbox?</strong> Email dispatcher is currently set to <em>Sandbox Simulation Mode</em>. To send a real email across the public Internet to <code>${escapeHtml(data.email_details.recipient_email)}</code>, configure your SMTP or Resend credentials in <strong>Email Delivery Settings</strong> on the left.
+          </p>
+        `;
+        showToast("Logged in sandbox. Configure SMTP to send real emails.");
+      }
+
       loadLogs();
     } catch (err) {
       showToast(`Dispatch error: ${err.message}`);
@@ -495,99 +768,126 @@ function initEmailDispatcher() {
   });
 }
 
+async function loadEmailConfig() {
+  try {
+    const res = await fetch("/api/email/config");
+    if (!res.ok) return;
+    const cfg = await res.json();
+
+    const providerSelect = document.getElementById("cfg-provider-select");
+    providerSelect.value = cfg.provider || "sandbox";
+
+    document.getElementById("cfg-smtp-host").value = cfg.smtp_host || "smtp.gmail.com";
+    document.getElementById("cfg-smtp-port").value = cfg.smtp_port || 587;
+    document.getElementById("cfg-smtp-user").value = cfg.smtp_user || "";
+    document.getElementById("cfg-resend-from").value = cfg.from_email || "";
+
+    if (cfg.has_smtp_password) {
+      document.getElementById("cfg-smtp-pass").value = "••••••••••••";
+    }
+    if (cfg.has_resend_api_key) {
+      document.getElementById("cfg-resend-key").value = cfg.resend_api_key_masked || "••••••••";
+    }
+
+    const smtpBlock = document.getElementById("smtp-settings-block");
+    const resendBlock = document.getElementById("resend-settings-block");
+    smtpBlock.style.display = (cfg.provider === "smtp") ? "flex" : "none";
+    resendBlock.style.display = (cfg.provider === "resend") ? "flex" : "none";
+  } catch (err) {
+    console.error("Error loading email config:", err);
+  }
+}
+
 function updateEmailPreview(redlineResult) {
   const previewBox = document.getElementById("outbound-body-preview");
   const vendorInput = document.getElementById("outbound-vendor-name");
   const contractInput = document.getElementById("outbound-contract-file");
 
-  contractInput.value = redlineResult.output_docx_filename;
+  if (contractInput) contractInput.value = redlineResult.output_docx_filename;
 
-  const vendorName = vendorInput.value || "Vendor";
+  const vendorName = vendorInput ? vendorInput.value : "ApexCloud Enterprise Ltd";
+  const criticals = redlineResult.actions.filter(a => a.severity === "CRITICAL");
+  const highs = redlineResult.actions.filter(a => a.severity === "HIGH");
+
   const lines = [
     `Dear Vendor Legal Counsel,`,
     ``,
-    `Thank you for sharing the draft agreement for ${vendorName}. Our enterprise legal and procurement teams have completed an initial review against our standard corporate onboarding playbook.`,
+    `Thank you for sharing the draft agreement for ${vendorName}. Our legal and procurement teams have completed an initial review against our corporate onboarding playbook.`,
     ``,
     `To ensure alignment with our corporate governance, risk thresholds, and procurement standards, we have generated native tracked changes and margin comments in the attached Word document (${redlineResult.output_docx_filename}).`,
     ``,
-    `Summary of Key Proposed Adjustments:`,
-    `- Liability Cap: Realigned to mutual 12-month trailing fees standard cap.`,
-    `- Payment Terms: Standardized to Net 60 days.`,
-    `- Deliverables Ownership: Customer retains full rights in custom deliverables and data.`,
-    `- Governing Law: Standardized under Delaware law with neutral AAA arbitration.`,
+    `Summary of Key Proposed Adjustments:`
+  ];
+
+  if (criticals.length > 0) {
+    lines.push(`\n1. Critical Risk Terms & Liability Alignment:`);
+    criticals.forEach(c => {
+      lines.push(`  • ${c.clause_type} (${c.rule_name}): Realigned to mutual 12-month standard caps and customer data ownership.`);
+    });
+  }
+
+  if (highs.length > 0) {
+    lines.push(`\n2. Commercial & Operational Safeguards:`);
+    highs.forEach(h => {
+      lines.push(`  • ${h.clause_type} (${h.rule_name}): Standardized Net 60 payment terms and dispute escrow.`);
+    });
+  }
+
+  lines.push(
     ``,
-    `Please review the attached native .docx document which contains complete Word tracked changes and explanatory margin comments.`,
+    `Please review the attached native .docx document which contains complete Word tracked changes and detailed explanatory margin comments.`,
     ``,
     `Best regards,`,
     `RedLiner Procurement & Legal Operations Team`
-  ];
+  );
 
-  previewBox.value = lines.join("\n");
+  if (previewBox) previewBox.value = lines.join("\n");
 }
 
-// ---------------- 4. Helpers Audit & Telemetry ----------------
+// ---------------- 5. Helpers Audit & Telemetry Monitor ----------------
 function initHelpersAudit() {
   const filterSelect = document.getElementById("log-filter-select");
   const btnRefresh = document.getElementById("btn-refresh-logs");
 
-  filterSelect.addEventListener("change", (e) => {
-    loadLogs(e.target.value);
-  });
-
-  btnRefresh.addEventListener("click", () => {
-    loadLogs(filterSelect.value);
-  });
+  filterSelect.addEventListener("change", (e) => loadLogs(e.target.value));
+  btnRefresh.addEventListener("click", () => loadLogs(filterSelect.value));
 }
 
-async function loadLogs(logType = "all") {
+async function loadLogs(filter = "all") {
   const tbody = document.getElementById("logs-table-body");
+  const badge = document.getElementById("logs-count-badge");
+
   try {
-    const res = await fetch(`/api/helpers/logs?log_type=${logType}&limit=40`);
+    const res = await fetch(`/api/helpers/logs?log_type=${filter}&limit=60`);
     if (!res.ok) throw new Error("Failed to load logs");
     const logs = await res.json();
 
-    document.getElementById("logs-count-badge").innerText = `${logs.length} events`;
+    badge.innerText = `${logs.length} entries`;
+    tbody.innerHTML = "";
 
     if (logs.length === 0) {
-      tbody.innerHTML = `
-        <tr>
-          <td colspan="4" style="text-align: center; color: var(--ink-muted); padding: 30px;">
-            No logs recorded in Helpers yet.
-          </td>
-        </tr>
-      `;
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--ink-muted); padding: 30px;">No audit events recorded in Helpers yet.</td></tr>`;
       return;
     }
 
-    tbody.innerHTML = "";
-    logs.forEach(log => {
+    logs.forEach(item => {
       const tr = document.createElement("tr");
 
-      let categoryBadgeClass = "badge-medium";
-      if (log.type === "redline") categoryBadgeClass = "badge-high";
-      if (log.type === "vendor_risk") categoryBadgeClass = "badge-critical";
-      if (log.type === "email") categoryBadgeClass = "badge-low";
+      let catBadge = "badge-medium";
+      if (item.category === "redline") catBadge = "badge-high";
+      if (item.category === "email") catBadge = "badge-low";
+      if (item.category === "vendor_risk") catBadge = "badge-critical";
 
-      const timeFormatted = log.timestamp ? new Date(log.timestamp).toLocaleTimeString() : "--";
-
-      let detailSummary = "";
-      if (log.event === "DOCUMENT_PARSED") {
-        detailSummary = `Parsed ${log.paragraphs_count} paragraphs, ${log.clauses_identified} clauses from ${log.filename} (${log.elapsed_ms}ms)`;
-      } else if (log.event === "REDLINE_EXECUTED") {
-        detailSummary = `Applied ${log.actions_generated} redlines (${log.critical_violations} critical) to ${log.contract_name}`;
-      } else if (log.event && log.event.startsWith("EMAIL")) {
-        detailSummary = `${log.direction}: ${log.subject} (Party: ${log.party})`;
-      } else if (log.event === "VENDOR_RISK_ASSESSED") {
-        detailSummary = `${log.vendor_name} — Score: ${log.risk_score} (${log.risk_tier}), Sanctions: ${log.sanction_status}`;
-      } else {
-        detailSummary = JSON.stringify(log);
-      }
+      const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString() : "";
+      const payloadStr = JSON.stringify(item.details || item.data || item.payload || {}, null, 1).replace(/[{}]/g, "").trim();
 
       tr.innerHTML = `
-        <td style="font-family: monospace; font-size: 11px; color: var(--ink-faint);">${timeFormatted}</td>
-        <td><span class="badge ${categoryBadgeClass}">${log.type || "SYSTEM"}</span></td>
-        <td style="font-weight: 600; color: var(--ink-primary); font-size: 12px;">${log.event || "LOG"}</td>
-        <td style="font-size: 12px; color: var(--ink-body);">${escapeHtml(detailSummary)}</td>
+        <td style="font-family: monospace; font-size: 11px; color: var(--ink-muted);">${timeStr}</td>
+        <td><span class="badge ${catBadge}">${escapeHtml(item.category || "audit")}</span></td>
+        <td style="font-weight: 600; font-size: 12px;">${escapeHtml(item.event || "EVENT")}</td>
+        <td style="font-family: monospace; font-size: 11px; color: var(--ink-body); max-width: 480px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+          ${escapeHtml(payloadStr || item.message || "")}
+        </td>
       `;
 
       tbody.appendChild(tr);

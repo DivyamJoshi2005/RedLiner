@@ -26,6 +26,9 @@ class MainOrchestrator:
         self.summary_agent = SummaryAgent()
         self.interruption_gate = InterruptionGate()
 
+    def reload_playbook(self, new_path: Optional[Path] = None) -> None:
+        self.legal_redliner.reload_playbook(new_path)
+
     def process_incoming_deal(
         self,
         deal_id: str,
