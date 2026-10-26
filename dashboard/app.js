@@ -986,23 +986,31 @@ function initHelpersAudit() {
   const filterSelect = document.getElementById("log-filter-select");
   const btnRefresh = document.getElementById("btn-refresh-logs");
 
-  filterSelect.addEventListener("change", (e) => loadLogs(e.target.value));
-  btnRefresh.addEventListener("click", () => loadLogs(filterSelect.value));
+  if (filterSelect) {
+    filterSelect.addEventListener("change", (e) => loadLogs(e.target.value));
+  }
+  if (btnRefresh) {
+    btnRefresh.addEventListener("click", () => {
+      const val = filterSelect ? filterSelect.value : "all";
+      loadLogs(val);
+    });
+  }
 }
 
 async function loadLogs(filter = "all") {
   const tbody = document.getElementById("logs-table-body");
   const badge = document.getElementById("logs-count-badge");
+  if (!tbody) return;
 
   try {
-    const res = await fetch(`/api/helpers/logs?log_type=${filter}&limit=60`);
-    if (!res.ok) throw new Error("Failed to load logs");
+    const res = await fetch(`/api/helpers/logs?log_type=${filter}&limit=60&_t=${Date.now()}`);
+    if (!res.ok) throw new Error("Failed to load logs from server");
     const logs = await res.json();
 
-    badge.innerText = `${logs.length} entries`;
+    if (badge) badge.innerText = `${logs.length} entries`;
     tbody.innerHTML = "";
 
-    if (logs.length === 0) {
+    if (!logs || logs.length === 0) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--ink-muted); padding: 30px;">No audit events recorded in Helpers yet.</td></tr>`;
       return;
     }
@@ -1010,20 +1018,63 @@ async function loadLogs(filter = "all") {
     logs.forEach(item => {
       const tr = document.createElement("tr");
 
-      let catBadge = "badge-medium";
-      if (item.category === "redline") catBadge = "badge-high";
-      if (item.category === "email") catBadge = "badge-low";
-      if (item.category === "vendor_risk") catBadge = "badge-critical";
+      // Categorize event dynamically
+      let cat = item.type || item.category;
+      if (!cat && item.event) {
+        if (item.event.includes("PARSED") || item.event.includes("PARSER")) cat = "parser";
+        else if (item.event.includes("REDLINE")) cat = "redline";
+        else if (item.event.includes("EMAIL")) cat = "email";
+        else if (item.event.includes("VENDOR") || item.event.includes("RISK")) cat = "vendor_risk";
+        else cat = "audit";
+      }
+      cat = cat || "audit";
 
-      const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString() : "";
-      const payloadStr = JSON.stringify(item.details || item.data || item.payload || {}, null, 1).replace(/[{}]/g, "").trim();
+      let catBadge = "badge-medium";
+      if (cat === "redline") catBadge = "badge-high";
+      else if (cat === "email") catBadge = "badge-low";
+      else if (cat === "vendor_risk" || cat === "vendor") catBadge = "badge-critical";
+      else if (cat === "parser") catBadge = "badge-medium";
+
+      const timeStr = item.timestamp ? new Date(item.timestamp).toLocaleTimeString() : "--";
+
+      // Formulate detailed, human-readable summary
+      let detailSummary = "";
+      if (item.event === "DOCUMENT_PARSED") {
+        detailSummary = `📄 ${item.filename || "contract"} (${(item.file_type || "docx").toUpperCase()}) — ${item.clauses_identified || 0} clauses parsed (${item.paragraphs_count || 0} paragraphs) in ${item.elapsed_ms || 0}ms`;
+      } else if (item.event === "REDLINE_EXECUTED") {
+        detailSummary = `✍️ ${item.contract_name || "contract"} — ${item.violations_detected || 0} violations (${item.critical_violations || 0} critical), ${item.actions_generated || 0} tracked changes generated [${item.playbook_used || "Corporate Playbook"}]`;
+      } else if (item.event && item.event.startsWith("EMAIL")) {
+        detailSummary = `✉️ [${item.direction || "OUTBOUND"}] ${item.party || "recipient"} — "${item.subject || "Counter-Proposal"}" (Status: ${item.status || "SENT"}${item.attachment_name ? `, Attachment: ${item.attachment_name}` : ""})`;
+      } else if (item.event === "VENDOR_RISK_ASSESSED") {
+        detailSummary = `🛡️ ${item.vendor_name || "Vendor"} (${item.domain || "N/A"}) — Score: ${item.risk_score !== undefined ? item.risk_score : "0.0"} (${item.risk_tier || "LOW"}), Sanctions: ${item.sanction_status || "CLEARED"}, Credit: ${item.credit_rating || "N/A"}`;
+      } else {
+        detailSummary = item.message || JSON.stringify(item);
+      }
+
+      // Prepare raw payload (all event metadata fields)
+      const rawPayload = { ...item };
+      delete rawPayload.timestamp;
+      delete rawPayload.type;
+      delete rawPayload.event;
+      delete rawPayload.category;
+
+      const hasPayloadData = Object.keys(rawPayload).length > 0;
+      const payloadJsonStr = hasPayloadData ? JSON.stringify(rawPayload, null, 2) : "";
 
       tr.innerHTML = `
-        <td style="font-family: monospace; font-size: 11px; color: var(--ink-muted);">${timeStr}</td>
-        <td><span class="badge ${catBadge}">${escapeHtml(item.category || "audit")}</span></td>
-        <td style="font-weight: 600; font-size: 12px;">${escapeHtml(item.event || "EVENT")}</td>
-        <td style="font-family: monospace; font-size: 11px; color: var(--ink-body); max-width: 480px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          ${escapeHtml(payloadStr || item.message || "")}
+        <td style="font-family: monospace; font-size: 11px; color: var(--ink-muted); white-space: nowrap;">${timeStr}</td>
+        <td><span class="badge ${catBadge}">${escapeHtml(cat.toUpperCase())}</span></td>
+        <td style="font-weight: 600; font-size: 12px; color: var(--ink-primary);">${escapeHtml(item.event || "EVENT")}</td>
+        <td style="font-size: 12px; color: var(--ink-body); line-height: 1.5;">
+          <div style="font-weight: 500;">${escapeHtml(detailSummary)}</div>
+          ${hasPayloadData ? `
+            <details style="margin-top: 6px;">
+              <summary style="cursor: pointer; font-size: 11px; color: var(--brand-orange); font-family: monospace; outline: none; user-select: none;">
+                ▸ View raw payload JSON
+              </summary>
+              <pre style="margin-top: 6px; padding: 8px 12px; background-color: var(--surface-soft); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); font-size: 11px; font-family: monospace; max-height: 160px; overflow-y: auto; white-space: pre-wrap; word-break: break-all; color: var(--ink-body);">${escapeHtml(payloadJsonStr)}</pre>
+            </details>
+          ` : ""}
         </td>
       `;
 
@@ -1031,5 +1082,8 @@ async function loadLogs(filter = "all") {
     });
   } catch (err) {
     console.error("Error loading logs:", err);
+    if (tbody) {
+      tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--ink-muted); padding: 30px;">⚠️ Failed to load audit logs: ${escapeHtml(err.message)} <button class="btn btn-secondary" onclick="loadLogs('${filter}')" style="margin-left: 10px; padding: 4px 10px; font-size: 11px;">Retry</button></td></tr>`;
+    }
   }
 }
