@@ -8,18 +8,20 @@
 
 ---
 
+
 ## 📖 Table of Contents
 1. [Executive Summary & The Problem](#-executive-summary--the-problem)
 2. [What Makes RedLiner an "Agentic AI" System?](#-what-makes-redliner-an-agentic-ai-system)
 3. [System Architecture & Agent Topology](#-system-architecture--agent-topology)
 4. [Step-by-Step Working Walkthrough](#-step-by-step-working-walkthrough)
 5. [The Agents & Subgraphs Explained](#-the-agents--subgraphs-explained)
-6. [Why Native Word OpenXML Tracked Changes Matter](#-why-native-word-openxml-tracked-changes-matter)
-7. [Repository Structure & Clean Directory Design](#-repository-structure--clean-directory-design)
-8. [Current Implementation vs. Future Roadmap](#-current-implementation-vs-future-roadmap)
-9. [How to Run, Test, and Verify](#-how-to-run-test-and-verify)
-10. [REST API Reference](#-rest-api-reference)
-11. [Design Philosophy: Zapier-Inspired Clean UI](#-design-philosophy-zapier-inspired-clean-ui)
+6. [Mathematical Scoring & Risk Evaluation Mechanisms](#-mathematical-scoring--risk-evaluation-mechanisms)
+7. [Why Native Word OpenXML Tracked Changes Matter](#-why-native-word-openxml-tracked-changes-matter)
+8. [Repository Structure & Clean Directory Design](#-repository-structure--clean-directory-design)
+9. [Current Implementation vs. Future Roadmap](#-current-implementation-vs-future-roadmap)
+10. [How to Run, Test, and Verify](#-how-to-run-test-and-verify)
+11. [REST API Reference](#-rest-api-reference)
+12. [Design Philosophy: Zapier-Inspired Clean UI](#-design-philosophy-zapier-inspired-clean-ui)
 
 ---
 
@@ -256,7 +258,105 @@ The codebase is organized into modular agents and subgraphs matching the synopsi
 
 ---
 
-## 🔍 Why Native Word OpenXML Tracked Changes Matter
+## 🧮 Mathematical Scoring & Risk Evaluation Mechanisms
+
+To avoid relying on unstructured Large Language Model text completions for high-stakes financial and legal determinations, RedLiner implements **two deterministic, reproducible scoring mechanisms** running in Python:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                        REDLINER DETERMINISTIC SCORING ENGINES                          │
+├────────────────────────────────────────────────────────────────────────────────────────┤
+│ 1. Normalized Deal Utility Score (0.0 to 1.0) │ Balances Price, Terms & Risk Penalties │
+│ 2. Multi-Factor Vendor Risk Score (0 to 100)  │ OFAC Sanctions, Credit, Litigation, OSINT │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Mechanism 1: Normalized Deal Utility Score ($U$)
+* **Location:** [`subgraphs/tradeoff_engine/math_engine.py`](file:///home/Divyam/Desktop/Skills/Projects/RedLiner/subgraphs/tradeoff_engine/math_engine.py) (`PythonMathEngine.calculate_utility`)
+* **Role:** Evaluates whether a proposed counter-offer represents an acceptable commercial deal for the buyer on a standardized scale from **0.0 (Worst)** to **1.0 (Optimal)**.
+
+#### Mathematical Formulation:
+$$U = \max\left(0.0, \, \min\left(1.0, \, U_{\text{price}} + U_{\text{terms}} - P_{\text{risk}}\right)\right)$$
+
+#### Component Breakdown:
+
+1. **Price Utility Component ($50\%$ Weight):**
+   $$U_{\text{price}} = \min\left(1.0, \, \frac{\text{Target Price}}{\max(\text{Offered Unit Price}, 1.0)}\right) \times 0.5$$
+   * If the vendor's price is at or below target, this term yields the maximum **$0.50$**.
+   * If the offered price exceeds our target, the utility scales down proportionally.
+
+2. **Payment Terms Utility Component ($30\%$ Weight):**
+   $$U_{\text{terms}} = \left(\frac{\min(\text{Payment Days}, 60)}{60.0}\right) \times 0.3$$
+   * **Net 60 Days:** $(60/60) \times 0.3 = \mathbf{0.30}$ *(Full enterprise cash flow preservation)*
+   * **Net 45 Days:** $(45/60) \times 0.3 = \mathbf{0.225}$
+   * **Net 30 Days:** $(30/60) \times 0.3 = \mathbf{0.150}$
+   * **Net 15 Days:** $(15/60) \times 0.3 = \mathbf{0.075}$
+
+3. **Vendor Risk Penalty Deduction ($20\%$ Weight):**
+   $$P_{\text{risk}} = \left(\frac{\min(\text{Vendor Risk Score}, 100.0)}{100.0}\right) \times 0.2$$
+   * A high vendor risk score directly erodes deal utility. For example, a counterparty with a Risk Score of **$50.0/100$** triggers an automatic penalty deduction of:
+     $$\left(\frac{50.0}{100.0}\right) \times 0.2 = \mathbf{-0.10}$$
+
+#### Guardrails & Boundary Verification:
+Implemented in [`subgraphs/tradeoff_engine/guardrail_checker.py`](file:///home/Divyam/Desktop/Skills/Projects/RedLiner/subgraphs/tradeoff_engine/guardrail_checker.py):
+* **Minimum Acceptable Utility:** Any deal producing $U < 0.55$ fails the guardrail check.
+* **Hard Budget Cap:** Deals where $\text{Deal Cost} > \$150,000$ trigger an automatic hard stop.
+* **Non-Negotiables:** Core intellectual property ownership and data privacy guardrails have an infinite implicit weight; agents cannot concede client IP for commercial discounts under any circumstances.
+
+---
+
+### Mechanism 2: Multi-Factor Vendor Risk Score (0 to 100)
+* **Location:** [`subgraphs/vendor_information/score_aggregator.py`](file:///home/Divyam/Desktop/Skills/Projects/RedLiner/subgraphs/vendor_information/score_aggregator.py) (`ScoreAggregator.calculate_score`)
+* **Role:** Quantifies counterparty credit exposure, corporate registration legitimacy, litigation history, and international sanctions compliance before any contract is redlined or executed.
+
+#### Mathematical Formulation:
+$$\text{Final Risk Score} = \max\left(0.0, \, \min\left(100.0, \, \sum \text{Risk Penalties} - \sum \text{Security Credits}\right)\right)$$
+
+#### Step-by-Step Scoring Rules:
+
+1. **Immediate Sanctions Check (OFAC / SDN / International Lists):**
+   * If `sanction_status == BLOCKED`:  
+     $$\text{Score} = \mathbf{100.0} \quad (\text{Tier: CRITICAL})$$
+     *Execution is immediately frozen under federal trade and export compliance policies.*
+   * If `sanction_status == FLAGGED` (Politically Exposed Person / Secondary Sanctions Inquiry):  
+     $$\text{Add } \mathbf{+45.0} \text{ penalty points}$$
+
+2. **Credit Inversion Penalty (30% Weight):**
+   $$\text{Credit Penalty} = \max\left(0.0, \, (100 - \text{Credit Score}) \times 0.3\right)$$
+   * *Example:* A vendor with a credit score of $60/100$ incurs $(100 - 60) \times 0.3 = \mathbf{+12.0}$ risk points.
+
+3. **Financial Credit Rating Penalties:**
+   | Financial Rating | AAA | AA | A | BBB | BB | B | CCC | D |
+   | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+   | **Penalty Points** | $+0.0$ | $+2.0$ | $+4.0$ | $+8.0$ | $+14.0$ | $+20.0$ | $+26.0$ | $+32.0$ |
+
+4. **Commercial Litigation & Dispute Record:**
+   * $\ge 3$ active or past commercial lawsuits: **$+18.0$ points**
+   * $1 - 2$ commercial lawsuits: **$+6.0$ points**
+   * Clean record ($0$ disputes): **$+0.0$ points**
+
+5. **Domain Age & Shell Entity Detection:**
+   * Newly registered domain ($< 1.0$ year old): **$+18.0$ points** *(High risk of fly-by-night or shell entities)*
+   * Young domain ($1.0 - 3.0$ years old): **$+7.0$ points**
+   * High-risk or offshore Top-Level Domain (`.su`, `.biz`, `.ru`, `.top`, `.xyz`): **$+10.0$ points**
+
+6. **Enterprise Security & Regulatory Compliance Credits (Deductions):**
+   * Verified **SOC 2 Type II** Certification: **$-10.0$ points**
+   * Verified **ISO 27001** Certification: **$-8.0$ points**
+   * Verified **GDPR / Privacy** Compliance: **$-4.0$ points**
+   * **Zero Certifications Penalty:** If the vendor has no verified enterprise security certifications: **$+15.0$ points**
+
+#### Standardized Risk Tiers & System Actions:
+| Score Range | Risk Tier | System Action & Pipeline Behavior |
+| :--- | :--- | :--- |
+| **$0.0 - 24.9$** | `LOW` | **Autonomous Processing Approved.** Negotiation proceeds without human interruption. |
+| **$25.0 - 49.9$** | `MEDIUM` | **Standard Review.** Enforces strict Net 60 days payment terms and standard liability caps. |
+| **$50.0 - 74.9$** | `HIGH` | **Interruption Gate Triggered.** Autonomous dispatch is paused; General Counsel must review. |
+| **$75.0 - 100.0$** | `CRITICAL` | **Transaction Blocked.** Redlining halted, OFAC/compliance flags raised, execution frozen. |
+
+---
 
 Most AI contract review tools output raw text, Markdown side-by-side diffs, or simple HTML previews. In enterprise legal workflows, **lawyers do not work in web Markdown—they work exclusively in Microsoft Word**.
 
@@ -414,11 +514,18 @@ PYTHONPATH=. .venv/bin/pytest tests/test_redliner_core.py -v
 | `/api/health` | `GET` | Health check returning online agent and subgraph architecture status. |
 | `/api/parser/parse` | `POST` | Ingests a contract file or sample name and returns indexed `Clause` objects. |
 | `/api/redliner/redline` | `POST` | Executes parallel policy audits and produces a native Word `.docx` with tracked changes. |
-| `/api/vendor/search` | `GET` | Searches the 52-vendor database by name or industry. |
+| `/api/playbook` | `GET` | Returns active corporate legal playbook configuration and all policy rules. |
+| `/api/playbook/upload` | `POST` | Uploads updated YAML/JSON playbook and immediately activates it across all agents. |
+| `/api/playbook/raw` | `POST` | Directly updates corporate legal playbook via pasted YAML or JSON text payload. |
+| `/api/playbook/rule` | `POST` | Adds a custom policy rule or updates an existing rule in the active playbook. |
+| `/api/playbook/reset` | `POST` | Restores baseline Fortune 500 Enterprise SaaS v2026.1 playbook rules. |
+| `/api/vendor/search` | `GET` | Searches the 52+ vendor database by name, domain, or ID. |
 | `/api/vendor/profile` | `GET` | Returns full OSINT intelligence, risk score (0-100), and sanctions status for a vendor. |
+| `/api/vendor/stats` | `GET` | Returns live counterparty breakdown (total, low risk, medium, high/critical). |
 | `/api/tradeoff/evaluate` | `POST` | Calculates normalized utility scores for commercial price vs. payment terms trade-offs. |
 | `/api/approval/decide` | `POST` | Submits human decision (`APPROVE`, `REJECT`, `MANUAL_EDIT`) to resume execution. |
 | `/api/email/dispatch-counter-proposal` | `POST` | Generates counter-proposal email and dispatches it with the redlined document. |
+| `/api/email/config` | `GET`, `POST` | Configures and tests direct SMTP or Resend credentials for live Internet delivery. |
 | `/api/webhook/email` | `POST` | Inbound webhook for Cloudflare Email Routing; triggers the entire negotiation workflow. |
 | `/api/helpers/logs` | `GET` | Retrieves real-time JSONL audit records from the `Helpers/` directory. |
 | `/api/download/{filename}` | `GET` | Downloads generated native redlined `.docx` contracts. |
@@ -435,11 +542,12 @@ The RedLiner dashboard is inspired by **[Zapier.com](https://zapier.com/)**:
   * Subtle Borders: `#E8E2D9` (warm neutral dividers)
 * **Zero Dark Mode:** Dark mode extensions and toggles are intentionally disabled to replicate enterprise SaaS administrative environments.
 * **Typography:** Clean, legible sans-serif hierarchy using **Inter** and **Degular Display** styles.
-* **4 Dedicated Workbenches:**
-  1. **Contract Parser & Redliner:** Upload contracts, inspect segmented clauses, and review redlines.
-  2. **Vendor Intelligence Radar:** Search counterparties, check sanction lists, and analyze OSINT risk tiers.
-  3. **Cloudflare Email Dispatcher:** Simulate inbound email webhooks and review outbound counter-proposals.
-  4. **Helpers Audit Trail:** Live viewer for `parser_metadata.jsonl`, `redline_audit.jsonl`, and `email_audit.jsonl`.
+* **5 Dedicated Workbenches:**
+  1. **Contract Parser & Redliner:** Upload contracts, inspect segmented clauses, and review native tracked changes.
+  2. **Corporate Legal Playbook:** Inspect active legal policies, add custom guardrails, or upload updated YAML/JSON rulebooks.
+  3. **Vendor Intelligence Radar:** Search counterparties, check OFAC sanctions, analyze OSINT risk tiers, and screen new vendors.
+  4. **Cloudflare Email Dispatcher:** Simulate inbound email webhooks, configure SMTP, and review outbound counter-proposals.
+  5. **Helpers Audit & Telemetry Monitor:** Live JSONL viewer with human-readable telemetry summaries and expandable JSON payloads.
 
 ---
 
